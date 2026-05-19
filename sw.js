@@ -1,4 +1,4 @@
-const CACHE = 'rapport-v4';
+const CACHE = 'rapport-v5';
 const ASSETS = ['./', './index.html', './manifest.json'];
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(c) { return c.addAll(ASSETS); }));
