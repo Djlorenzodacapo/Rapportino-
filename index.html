@@ -774,7 +774,7 @@ function persist() {
 function mkRapport() {
   var now = new Date();
   var z2 = function(n) { return String(n).padStart(2,'0'); };
-  return {
+  var r = {
     id: Date.now().toString(),
     createdAt: now.toISOString(),
     status: 'offen',
@@ -792,6 +792,11 @@ function mkRapport() {
     massn:{}, messwerte:[], fotos:[], sig:'', notizen:'',
     _prefilled:false, _mapsUrl:''
   };
+  var _pf = loadCD();
+  if (_pf.lt) r.sd.techniker = _pf.lt;
+  if (_pf.lf) r.sd.firma = _pf.lf;
+  if (_pf.ln) r.sd.netzbetreiber = _pf.ln;
+  return r;
 }
 
 // ============================================================
@@ -833,14 +838,14 @@ function showView(v) {
   } else if (v === 'settings') {
     bB.style.display = 'none'; bP.style.display = 'none';
     fab.className = 'fab hide'; nav.className = 'bnav';
-    ht.textContent = 'Einstellungen'; hs.textContent = 'Profil & eigene Eintraege';
+    ht.textContent = 'Einstellungen'; hs.textContent = 'Profil und Eintraege';
     document.getElementById('nb-set').classList.add('on');
     renderSettings();
   } else {
     bB.style.display = 'flex'; bP.style.display = 'flex';
     fab.className = 'fab hide'; nav.className = 'bnav hide';
     var tdet = AUFTRAGSTYPEN.find(function(x){return x.id===cur.auftragstyp;}) || {name:'Rapport'};
-    ht.textContent = tdet.name; hs.textContent = cur.sd.adresse || '---';
+    ht.textContent = tdet.name; hs.textContent = cur.sd.adresse || '';
     renderDetail();
   }
   window.scrollTo(0,0);
@@ -937,7 +942,7 @@ function openRapport(id) {
   if (!r._mapsUrl) r._mapsUrl = '';
   if (!r.auftragstyp) r.auftragstyp = 'entstoerung';
   if (!r.status) r.status = 'offen';
-  if (!r.sd) r.sd = {datum:'',zeit:'',techniker:'',firma:'',auftraggeber:'',netzbetreiber:'',adresse:'',kundenname:'',kundennr:'',auftragsnr:'',zaehlernr_alt:'',zaehlernr_neu:'',melo:''};
+  if (!r.sd) r.sd = {};
   cur = r; prevView = 'home'; showView('detail');
 }
 
@@ -1250,11 +1255,9 @@ function renderForm() {
       +'<div class="ti">'+t.icon+'</div><div class="tn">'+t.name+'</div></div>';
   }).join('');
 
-  var _xcustom = loadCustomData();
-  var _allnb = NETZBETREIBER.concat(_xcustom.netzbetreiber || []);
-  var nbOpts = _allnb.map(function(n,i) {
-    var v = i===0?'':n;
-    return '<option value="'+xe(v)+'"'+(r.sd.netzbetreiber===v?' selected':'')+'>'+xe(n)+'</option>';
+  var _xcd = loadCD(); var _allNB = NETZBETREIBER.concat(_xcd.netzbetreiber||[]);
+  var nbOpts = _allNB.map(function(n,i) {
+    var v=i===0?'':n; return '<option value="'+xe(v)+'"'+(v&&r.sd.netzbetreiber===v?' selected':'')+'>'+xe(n)+'</option>';
   }).join('');
 
   var stOpts = '<option value="offen"'+(r.status==='offen'?' selected':'')+'>Offen</option>'
@@ -1600,75 +1603,7 @@ function _share(blob, fname) {
 }
 function _openTab(blob,fname) {
   var w=window.open('','_blank'); if(!w){toast('⚠️ Pop-up blockiert');return;}
-  w.document.write('<html><body style="margin:0;background:#1E293B;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#fff"><div style="text-align:center"><div style="font-size:56px;margin-bottom:16px">📄</div><div style="font-size:18px;font-weight:700">Wird geladen…</div></div>
-<script>
-function loadCustomData(){try{return JSON.parse(localStorage.getItem('rc')||'{}');}catch(e){return {};}}
-function saveCustomData(d){localStorage.setItem('rc',JSON.stringify(d));}
-function renderSettings(){
-  var el=document.getElementById('vsettings');
-  var cd=loadCustomData();
-  var rows=function(arr,type){
-    if(!arr||!arr.length)return '<p style="font-size:13px;color:#64748B;padding:8px 0">Noch keine Eintraege.</p>';
-    return arr.map(function(v,i){
-      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E8F0">'
-        +'<span style="flex:1;font-size:14px">'+v+'</span>'
-        +'<button onclick="delCust(''+type+'','+i+')" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#DC2626;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">x</button>'
-        +'</div>';
-    }).join('');
-  };
-  var s='<div class="hero"><h2>&#9881; Einstellungen</h2><p>Profil und eigene Eintraege</p></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128100; Mein Profil</div>';
-  s+='<div style="padding:14px">';
-  s+='<div class="fg"><div class="fl">Techniker-Name</div><input type="text" class="fi" id="s-tech" value="'+(cd.lastTechniker||'')+'" placeholder="Lorenzo Randazzo" oninput="savePrf()"></div>';
-  s+='<div class="fg"><div class="fl">Firma</div><input type="text" class="fi" id="s-firma" value="'+(cd.lastFirma||'')+'" placeholder="Lorand Technikservice" oninput="savePrf()"></div>';
-  s+='<div class="fg"><div class="fl">Std-Netzbetreiber</div><input type="text" class="fi" id="s-nb" value="'+(cd.lastNB||'')+'" placeholder="Westnetz GmbH" oninput="savePrf()"></div>';
-  s+='<div style="background:#D1FAE5;border-radius:8px;padding:8px;font-size:12px;color:#065F46">Automatisch in neue Rapporte eingetragen.</div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128119; Techniker-Namen</div>';
-  s+='<div style="padding:14px">'+rows(cd.techniker,'techniker');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-tech" placeholder="Name..." style="flex:1"><button onclick="addCust('techniker','i-tech')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127970; Firmennamen</div>';
-  s+='<div style="padding:14px">'+rows(cd.firmen,'firmen');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-firma" placeholder="Firma..." style="flex:1"><button onclick="addCust('firmen','i-firma')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127981; Eigene Netzbetreiber</div>';
-  s+='<div style="padding:14px">'+rows(cd.netzbetreiber,'netzbetreiber');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-nb" placeholder="Netzbetreiber..." style="flex:1"><button onclick="addCust('netzbetreiber','i-nb')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128190; Daten</div>';
-  s+='<div style="padding:14px;display:flex;flex-direction:column;gap:10px">';
-  s+='<button class="btn btn-s btn-w" onclick="exportAll()">Exportieren (JSON)</button>';
-  s+='<button class="btn btn-s btn-w" onclick="document.getElementById('jsonIn').click()">Importieren (JSON)</button>';
-  s+='<button class="btn btn-d btn-w" onclick="if(confirm('Alle Rapporte loeschen?')){{reports=[];persist();toast('Geloescht');showView('home');}}">Alle loeschen</button>';
-  s+='</div></div>';
-  s+='<div style="height:40px"></div>';
-  el.innerHTML=s;
-}
-function savePrf(){
-  var cd=loadCustomData();
-  var t=document.getElementById('s-tech'),f=document.getElementById('s-firma'),n=document.getElementById('s-nb');
-  if(t)cd.lastTechniker=t.value;if(f)cd.lastFirma=f.value;if(n)cd.lastNB=n.value;
-  saveCustomData(cd);
-}
-function addCust(type,inpId){
-  var inp=document.getElementById(inpId);
-  if(!inp||!inp.value.trim()){toast('Bitte etwas eingeben');return;}
-  var val=inp.value.trim();
-  var cd=loadCustomData();
-  if(!cd[type])cd[type]=[];
-  if(cd[type].indexOf(val)!==-1){toast('Bereits vorhanden');return;}
-  cd[type].push(val);saveCustomData(cd);inp.value='';
-  toast(val+' gespeichert');renderSettings();
-}
-function delCust(type,idx){
-  var cd=loadCustomData();
-  if(cd[type])cd[type].splice(idx,1);
-  saveCustomData(cd);toast('Geloescht');renderSettings();
-}
-</script>
-</body></html>');
+  w.document.write('<html><body style="margin:0;background:#1E293B;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#fff"><div style="text-align:center"><div style="font-size:56px;margin-bottom:16px">📄</div><div style="font-size:18px;font-weight:700">Wird geladen…</div></div></body></html>');
   var rd=new FileReader(); rd.onload=function(e){w.location.href=e.target.result; toast('Geöffnet → Teilen → In Dateien');};
   rd.readAsDataURL(blob);
 }
@@ -1735,6 +1670,103 @@ function doXLS() {
   _share(new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'}),fname);
 }
 
+
+// ============================================================
+// CUSTOM DATA & SETTINGS
+// ============================================================
+function loadCD(){try{return JSON.parse(localStorage.getItem('rc')||'{}');}catch(e){return {};}}
+function saveCD(d){localStorage.setItem('rc',JSON.stringify(d));}
+
+function renderSettings(){
+  var el=document.getElementById('vsettings');
+  if(!el)return;
+  var cd=loadCD();
+  var T=cd.techniker||[],F=cd.firmen||[],N=cd.netzbetreiber||[];
+
+  function mkList(arr,type){
+    if(!arr.length) return '<p style="color:#94A3B8;font-size:13px;padding:8px 0">Noch keine Eintraege.</p>';
+    var s='';
+    for(var i=0;i<arr.length;i++){
+      s+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E8F0">'
+        +'<span style="flex:1;font-size:14px">'+xe(arr[i])+'</span>'
+        +'<button class="btn btn-d" style="padding:4px 10px;font-size:12px" data-t="'+type+'" data-i="'+i+'" onclick="delCD(this)">x</button>'
+        +'</div>';
+    }
+    return s;
+  }
+
+  var s='<div class="hero"><h2>&#9881; Einstellungen</h2><p>Profil und eigene Eintraege</p></div>';
+
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07)">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">Mein Profil &mdash; automatisch eingetragen</div>';
+  s+='<div style="padding:14px">';
+  s+='<div class="fg"><div class="fl">Techniker-Name</div><input type="text" class="fi" id="st" value="'+xe(cd.lt||'')+'" placeholder="Lorenzo Randazzo" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Firma</div><input type="text" class="fi" id="sf" value="'+xe(cd.lf||'')+'" placeholder="Lorand Technikservice" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Standard-Netzbetreiber</div><input type="text" class="fi" id="sn" value="'+xe(cd.ln||'')+'" placeholder="Westnetz GmbH" oninput="savePrf()"></div>';
+  s+='<div style="background:#D1FAE5;border-radius:8px;padding:8px;font-size:12px;color:#065F46;margin-top:4px">Automatisch in neue Rapporte eingetragen.</div>';
+  s+='</div></div>';
+
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07)">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">Techniker-Namen (Schnellauswahl)</div>';
+  s+='<div style="padding:14px">'+mkList(T,'techniker');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="it" placeholder="Name..." style="flex:1"><button class="btn btn-p" style="padding:10px 14px" data-t="techniker" data-p="it" onclick="addCD(this)">+ Add</button></div>';
+  s+='</div></div>';
+
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07)">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">Firmennamen (Schnellauswahl)</div>';
+  s+='<div style="padding:14px">'+mkList(F,'firmen');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="iff" placeholder="Firma..." style="flex:1"><button class="btn btn-p" style="padding:10px 14px" data-t="firmen" data-p="iff" onclick="addCD(this)">+ Add</button></div>';
+  s+='</div></div>';
+
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07)">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">Eigene Netzbetreiber</div>';
+  s+='<div style="padding:14px">'+mkList(N,'netzbetreiber');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="inn" placeholder="Netzbetreiber..." style="flex:1"><button class="btn btn-p" style="padding:10px 14px" data-t="netzbetreiber" data-p="inn" onclick="addCD(this)">+ Add</button></div>';
+  s+='</div></div>';
+
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,.07)">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">Daten verwalten</div>';
+  s+='<div style="padding:14px;display:flex;flex-direction:column;gap:10px">';
+  s+='<button class="btn btn-s btn-w" onclick="exportAll()">Alle Rapporte exportieren</button>';
+  s+='<button class="btn btn-s btn-w" onclick="document.getElementById(\'jsonIn\').click()">Rapporte importieren</button>';
+  s+='<button class="btn btn-d btn-w" onclick="clearAllR()">Alle Rapporte loeschen</button>';
+  s+='</div></div>';
+  s+='<div class="copy">2025 Lorenzo Randazzo</div><div style="height:40px"></div>';
+  el.innerHTML=s;
+}
+
+function savePrf(){
+  var cd=loadCD();
+  var t=document.getElementById('st'),f=document.getElementById('sf'),n=document.getElementById('sn');
+  if(t)cd.lt=t.value; if(f)cd.lf=f.value; if(n)cd.ln=n.value;
+  saveCD(cd);
+}
+
+function addCD(btn){
+  var type=btn.getAttribute('data-t'), pid=btn.getAttribute('data-p');
+  var inp=document.getElementById(pid);
+  if(!inp||!inp.value.trim()){toast('Bitte etwas eingeben');return;}
+  var val=inp.value.trim();
+  var cd=loadCD();
+  if(!cd[type])cd[type]=[];
+  if(cd[type].indexOf(val)!==-1){toast('Bereits vorhanden');return;}
+  cd[type].push(val); saveCD(cd);
+  inp.value=''; toast(val+' gespeichert'); renderSettings();
+}
+
+function delCD(btn){
+  var type=btn.getAttribute('data-t'), idx=parseInt(btn.getAttribute('data-i'));
+  var cd=loadCD();
+  if(cd[type])cd[type].splice(idx,1);
+  saveCD(cd); toast('Geloescht'); renderSettings();
+}
+
+function clearAllR(){
+  if(window.confirm('Alle Rapporte loeschen? Nicht rueckgaengig!')){
+    reports=[]; persist(); toast('Geloescht.'); showView('home');
+  }
+}
+
 // ============================================================
 // INSTALL BANNER
 // ============================================================
@@ -1758,74 +1790,6 @@ if('serviceWorker' in navigator){
 // ============================================================
 renderHome();
 if(allAuftr.length){ document.getElementById('tourDot').style.display='block'; }
-</script>
-
-<script>
-function loadCustomData(){try{return JSON.parse(localStorage.getItem('rc')||'{}');}catch(e){return {};}}
-function saveCustomData(d){localStorage.setItem('rc',JSON.stringify(d));}
-function renderSettings(){
-  var el=document.getElementById('vsettings');
-  var cd=loadCustomData();
-  var rows=function(arr,type){
-    if(!arr||!arr.length)return '<p style="font-size:13px;color:#64748B;padding:8px 0">Noch keine Eintraege.</p>';
-    return arr.map(function(v,i){
-      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E8F0">'
-        +'<span style="flex:1;font-size:14px">'+v+'</span>'
-        +'<button onclick="delCust(''+type+'','+i+')" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#DC2626;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">x</button>'
-        +'</div>';
-    }).join('');
-  };
-  var s='<div class="hero"><h2>&#9881; Einstellungen</h2><p>Profil und eigene Eintraege</p></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128100; Mein Profil</div>';
-  s+='<div style="padding:14px">';
-  s+='<div class="fg"><div class="fl">Techniker-Name</div><input type="text" class="fi" id="s-tech" value="'+(cd.lastTechniker||'')+'" placeholder="Lorenzo Randazzo" oninput="savePrf()"></div>';
-  s+='<div class="fg"><div class="fl">Firma</div><input type="text" class="fi" id="s-firma" value="'+(cd.lastFirma||'')+'" placeholder="Lorand Technikservice" oninput="savePrf()"></div>';
-  s+='<div class="fg"><div class="fl">Std-Netzbetreiber</div><input type="text" class="fi" id="s-nb" value="'+(cd.lastNB||'')+'" placeholder="Westnetz GmbH" oninput="savePrf()"></div>';
-  s+='<div style="background:#D1FAE5;border-radius:8px;padding:8px;font-size:12px;color:#065F46">Automatisch in neue Rapporte eingetragen.</div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128119; Techniker-Namen</div>';
-  s+='<div style="padding:14px">'+rows(cd.techniker,'techniker');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-tech" placeholder="Name..." style="flex:1"><button onclick="addCust('techniker','i-tech')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127970; Firmennamen</div>';
-  s+='<div style="padding:14px">'+rows(cd.firmen,'firmen');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-firma" placeholder="Firma..." style="flex:1"><button onclick="addCust('firmen','i-firma')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127981; Eigene Netzbetreiber</div>';
-  s+='<div style="padding:14px">'+rows(cd.netzbetreiber,'netzbetreiber');
-  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-nb" placeholder="Netzbetreiber..." style="flex:1"><button onclick="addCust('netzbetreiber','i-nb')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
-  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
-  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128190; Daten</div>';
-  s+='<div style="padding:14px;display:flex;flex-direction:column;gap:10px">';
-  s+='<button class="btn btn-s btn-w" onclick="exportAll()">Exportieren (JSON)</button>';
-  s+='<button class="btn btn-s btn-w" onclick="document.getElementById('jsonIn').click()">Importieren (JSON)</button>';
-  s+='<button class="btn btn-d btn-w" onclick="if(confirm('Alle Rapporte loeschen?')){{reports=[];persist();toast('Geloescht');showView('home');}}">Alle loeschen</button>';
-  s+='</div></div>';
-  s+='<div style="height:40px"></div>';
-  el.innerHTML=s;
-}
-function savePrf(){
-  var cd=loadCustomData();
-  var t=document.getElementById('s-tech'),f=document.getElementById('s-firma'),n=document.getElementById('s-nb');
-  if(t)cd.lastTechniker=t.value;if(f)cd.lastFirma=f.value;if(n)cd.lastNB=n.value;
-  saveCustomData(cd);
-}
-function addCust(type,inpId){
-  var inp=document.getElementById(inpId);
-  if(!inp||!inp.value.trim()){toast('Bitte etwas eingeben');return;}
-  var val=inp.value.trim();
-  var cd=loadCustomData();
-  if(!cd[type])cd[type]=[];
-  if(cd[type].indexOf(val)!==-1){toast('Bereits vorhanden');return;}
-  cd[type].push(val);saveCustomData(cd);inp.value='';
-  toast(val+' gespeichert');renderSettings();
-}
-function delCust(type,idx){
-  var cd=loadCustomData();
-  if(cd[type])cd[type].splice(idx,1);
-  saveCustomData(cd);toast('Geloescht');renderSettings();
-}
 </script>
 </body>
 </html>
