@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rapport">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1E293B">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Monteur Rapport</title>
+<style>
+:root{
+  --bg:#F1F5F9;--card:#FFF;--text:#0F172A;--muted:#64748B;
+  --border:#E2E8F0;--navy:#1E293B;--navy2:#334155;
+  --accent:#6366F1;--accent2:#818CF8;
+  --green:#059669;--red:#DC2626;--orange:#EA580C;
+  --r:13px;--sh:0 1px 8px rgba(0,0,0,.07),0 2px 16px rgba(0,0,0,.04);
+  --sbot:env(safe-area-inset-bottom,0px);
+  --stop:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{font-family:-apple-system,'SF Pro Text',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overscroll-behavior:none}
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:300;background:var(--navy);color:#fff;display:flex;align-items:center;padding:10px 14px;padding-top:max(10px,var(--stop));gap:10px;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#6366F1,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr-info{flex:1;min-width:0}
+.hdr-info h1{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-info p{font-size:11px;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{width:38px;height:38px;border-radius:10px;border:none;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation;font-size:16px;font-family:inherit}
+.ib:active{background:rgba(255,255,255,.2)}
+.hdr-btns{display:flex;gap:6px}
+/* VIEWS */
+.view{display:none;padding-bottom:calc(80px + var(--sbot));min-height:90vh}
+.view.active{display:block}
+.view-nb{padding-bottom:calc(60px + var(--sbot))}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;padding-bottom:var(--sbot);z-index:250;box-shadow:0 -2px 12px rgba(0,0,0,.06)}
+.bnav.hide{display:none}
+.nb{flex:1;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--muted);background:none;border:none;font-family:inherit;cursor:pointer;touch-action:manipulation}
+.nb.on{color:var(--accent)}
+.nb .bi{font-size:22px;line-height:1;position:relative;display:inline-block}
+.nb .bi .dot{position:absolute;top:-2px;right:-4px;width:8px;height:8px;background:var(--red);border-radius:50%;border:1.5px solid #fff;display:none}
+.nb:active{opacity:.6}
+/* HOME */
+.hero{background:linear-gradient(135deg,#1E293B 0%,#334155 60%,#1e3a5f 100%);padding:24px 16px 20px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(99,102,241,.25),transparent 70%)}
+.hero h2{font-size:24px;font-weight:800;letter-spacing:-.3px}
+.hero p{font-size:13px;color:rgba(255,255,255,.6);margin-top:3px}
+.stat-row{display:flex;gap:10px;margin-top:18px}
+.stat{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:13px;text-align:center}
+.stat-n{font-size:28px;font-weight:800;color:#A5B4FC}
+.stat-l{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;font-weight:500}
+.sec-hdr{padding:14px 16px 6px;display:flex;align-items:center;justify-content:space-between}
+.sec-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.acts{display:flex;gap:8px;padding:0 12px 4px;flex-wrap:wrap}
+.act-btn{flex:1;min-width:calc(50% - 4px);padding:11px 8px;background:#fff;border:1.5px solid var(--border);border-radius:11px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;text-align:center;box-shadow:var(--sh);touch-action:manipulation;font-family:inherit}
+.act-btn:active{background:var(--bg)}
+.rcard{margin:0 12px 10px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;cursor:pointer;border:1.5px solid var(--border)}
+.rcard:active{opacity:.85}
+.rcard-top{padding:13px 14px;display:flex;align-items:center;gap:12px}
+.rc-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.rcard-info{flex:1;min-width:0}
+.rcard-addr{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-open{background:#FEF3C7;color:#92400E}
+.b-done{background:#D1FAE5;color:#065F46}
+.rcard-sub{padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:3px 8px;background:#EEF2FF;color:var(--accent);border-radius:6px;font-size:11px;font-weight:600}
+.fab{position:fixed;bottom:max(calc(62px + var(--sbot)),78px);right:18px;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#6366F1,#818CF8);color:#fff;border:none;font-size:28px;box-shadow:0 4px 20px rgba(99,102,241,.45);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;touch-action:manipulation}
+.fab:active{transform:scale(.9)}
+.fab.hide{display:none}
+.empty{text-align:center;padding:50px 32px;color:var(--muted)}
+.empty-ico{font-size:50px;margin-bottom:12px}
+.empty h3{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px}
+.empty p{font-size:14px;line-height:1.6}
+/* TOUR VIEW */
+.tour-hero{background:linear-gradient(135deg,#1E293B,#1e3a5f);padding:18px 16px;color:#fff}
+.tour-hero h2{font-size:20px;font-weight:800}
+.tour-hero p{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
+.kw-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.kw-card{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;touch-action:manipulation}
+.kw-card:active{background:rgba(255,255,255,.2)}
+.kw-name{font-size:10px;font-weight:800;letter-spacing:.5px;margin-bottom:3px}
+.kw-n{font-size:24px;font-weight:800}
+.kw-sub{font-size:9px;color:rgba(255,255,255,.5);margin-top:2px}
+.toolbar{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:199}
+.filter-row{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.filter-row::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;background:var(--bg);color:var(--muted);cursor:pointer;border:1.5px solid var(--border);touch-action:manipulation;font-family:inherit}
+.fchip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fchip:active{opacity:.7}
+.search-wrap{padding:8px 12px}
+.s-inp{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;outline:none}
+.s-inp:focus{border-color:var(--accent);background:#fff}
+.import-box{margin:12px;background:#fff;border:2px dashed var(--border);border-radius:var(--r);padding:24px 16px;text-align:center;cursor:pointer;touch-action:manipulation}
+.import-box:active{background:var(--bg)}
+.import-box .imp-ico{font-size:36px;margin-bottom:10px}
+.import-box h3{font-size:15px;font-weight:700;margin-bottom:5px}
+.import-box p{font-size:12px;color:var(--muted);line-height:1.5}
+.day-group{margin:0 12px 14px}
+.day-lbl{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:10px 0 6px;display:flex;align-items:center;gap:8px}
+.day-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.day-kw{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px}
+.day-cnt{background:var(--bg);border-radius:20px;padding:2px 8px;font-size:10px;color:var(--muted);border:1px solid var(--border);margin-left:auto}
+.auftr{background:#fff;border-radius:var(--r);margin-bottom:7px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;touch-action:manipulation;border:1.5px solid var(--border);box-shadow:var(--sh);position:relative;overflow:hidden}
+.auftr:active{background:var(--bg)}
+.auftr.done{opacity:.55}
+.auftr.done::after{content:'✓';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--green);font-size:20px;font-weight:800}
+.ap{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.ap1{background:#FEE2E2;color:#DC2626}
+.ap2{background:#D1FAE5;color:#065F46}
+.auftr-info{flex:1;min-width:0}
+.auftr-addr{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auftr-meta{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.auftr-time{font-size:14px;font-weight:800;color:var(--accent);flex-shrink:0;margin-right:4px}
+/* FORM */
+.fsec{margin:10px 12px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;border:1.5px solid var(--border)}
+.fhdr{padding:13px 14px;background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;display:flex;align-items:center;gap:9px;cursor:pointer;user-select:none;touch-action:manipulation}
+.fhdr-ico{font-size:16px}
+.fhdr-title{flex:1;font-size:14px;font-weight:700}
+.chev{font-size:11px;transition:transform .22s;opacity:.7}
+.fsec.col .chev{transform:rotate(-90deg)}
+.fsec.col .fbody{display:none}
+.fbody{padding:14px}
+.fg{margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.fl-r{color:var(--accent)}
+.fi{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);background:var(--bg);-webkit-appearance:none;outline:none;transition:border-color .18s}
+.fi:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.5}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.typgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.typbtn{padding:14px 8px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;text-align:center;touch-action:manipulation;font-family:inherit}
+.typbtn .ti{font-size:24px;margin-bottom:4px}
+.typbtn .tn{font-size:11px;font-weight:700;color:var(--text);line-height:1.3}
+.typbtn.sel{border-color:var(--accent);background:#EEF2FF}
+.typbtn.sel .tn{color:var(--accent)}
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gbtn{padding:12px 6px;border:1.5px solid var(--border);border-radius:11px;background:var(--bg);cursor:pointer;text-align:center;touch-action:manipulation;font-family:inherit}
+.gbtn .gi{font-size:20px;margin-bottom:3px}
+.gbtn .gn{font-size:10px;font-weight:700;color:var(--text);line-height:1.2}
+.gbtn.sel{border-color:var(--accent);background:#EEF2FF}
+.gbtn.sel .gn{color:var(--accent)}
+.mg-title{font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;padding:10px 0 4px;display:flex;align-items:center;gap:6px}
+.mg-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.mi{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;touch-action:manipulation}
+.mi:last-child{border-bottom:none}
+.mi:active{background:#F8FAFF;border-radius:8px}
+.mchk{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;font-size:13px;flex-shrink:0}
+.mchk.chkd{background:var(--green);border-color:var(--green);color:#fff}
+.mt{font-size:13px;flex:1;line-height:1.4}
+.mv-hdr,.mv-row{display:grid;grid-template-columns:1fr 78px 38px 42px;gap:6px;align-items:center;margin-bottom:7px}
+.mv-hdr span{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.mv-row .fi{padding:9px 8px;font-size:14px}
+.mv-unit{font-size:11px;color:var(--muted);text-align:center;font-weight:600}
+.ok-btn{width:40px;height:40px;border-radius:9px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;touch-action:manipulation;font-family:inherit}
+.ok-btn.ok{background:#D1FAE5;border-color:var(--green);color:var(--green)}
+.ok-btn.nok{background:#FEE2E2;border-color:var(--red);color:var(--red)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pthumb{aspect-ratio:1;border-radius:10px;overflow:hidden;position:relative}
+.pthumb img{width:100%;height:100%;object-fit:cover}
+.pdel{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(15,23,42,.75);color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
+.padd{aspect-ratio:1;border-radius:10px;border:2px dashed var(--border);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);gap:4px;font-size:22px;touch-action:manipulation}
+.padd span{font-size:10px;font-weight:600}
+.sig-canvas{width:100%;height:160px;border:1.5px solid var(--border);border-radius:11px;background:#fff;touch-action:none;cursor:crosshair;display:block}
+.sig-canvas.has-sig{border-color:var(--green)}
+.sig-acts{display:flex;gap:9px;margin-top:8px}
+.gps-btn{flex:1;padding:10px 8px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;text-align:center;touch-action:manipulation;font-family:inherit;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.gps-btn:active{background:var(--border)}
+.btn{padding:13px 16px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;touch-action:manipulation}
+.btn-p{background:linear-gradient(135deg,#6366F1,#818CF8);color:#fff;box-shadow:0 3px 12px rgba(99,102,241,.35)}
+.btn-p:active{transform:scale(.97)}
+.btn-s{background:var(--bg);color:var(--text);border:1.5px solid var(--border)}
+.btn-d{background:#FEF2F2;color:var(--red);border:1.5px solid #FECACA}
+.btn-w{width:100%}
+.abar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:10px 12px;padding-bottom:max(12px,var(--sbot));display:flex;gap:8px;box-shadow:0 -1px 0 var(--border),0 -4px 16px rgba(0,0,0,.08);z-index:200}
+.pfbanner{margin:8px 12px 0;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1.5px solid var(--accent);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--accent);font-weight:600;line-height:1.4}
+/* SELECT with options enhancement */
+.select-wrap{position:relative}
+.select-wrap::after{content:'▼';position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);pointer-events:none}
+.select-wrap select{padding-right:30px}
+/* DETAIL */
+.dsec{margin:10px 12px;background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;border:1.5px solid var(--border)}
+.dsec-hdr{padding:11px 14px;background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.dbody{padding:14px}
+.drow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:12px}
+.drow:last-child{border-bottom:none}
+.dkey{font-size:13px;color:var(--muted);flex-shrink:0;max-width:45%}
+.dval{font-size:13px;font-weight:600;text-align:right;word-break:break-word}
+/* MODAL */
+.modal-bd{position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:800;display:none;align-items:flex-end}
+.modal-bd.open{display:flex}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:22px 16px;padding-bottom:max(24px,var(--sbot));width:100%;max-height:92vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:8px;text-align:center}
+.modal-note{font-size:12px;color:var(--muted);text-align:center;margin-bottom:18px;line-height:1.7;padding:10px 12px;background:var(--bg);border-radius:10px}
+.modal-btns{display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:24px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transition:opacity .25s;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.copy{text-align:center;padding:20px 16px 4px;font-size:10px;color:var(--muted);line-height:1.6}
+/* PRINT */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{margin:0;padding:0;background:#fff!important;font-size:10pt}
+  .hdr,.fab,.abar,.ib,.pdel,.modal-bd,.toast,.copy,.bnav,.toolbar,
+  #vhome,#vform,#vtour,button.btn-d,button.btn-s,.pfbanner{display:none!important}
+  .view{display:block!important;padding:0!important}
+  #vdetail{display:block!important;padding:0!important}
+  .ph{display:block!important;padding:0 0 10px;margin:0 12px 12px;border-bottom:2.5px solid #1E293B}
+  .dsec{border:1px solid #D1D5DB!important;margin:8px 12px!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid;border-radius:6px!important}
+  .dsec-hdr{background:#1E293B!important;color:#fff!important;padding:7px 12px!important;font-size:9.5pt!important;border-radius:5px 5px 0 0!important}
+  .dbody{padding:10px 12px!important}
+  .drow{padding:5px 0!important}
+  .dkey{font-size:9pt!important;color:#475569!important}
+  .dval{font-size:9pt!important}
+  .mi{padding:4px 0!important}
+  .mt{font-size:9pt!important}
+  .mchk{width:16px!important;height:16px!important;font-size:10px!important}
+  .mg-title{font-size:8pt!important;padding:6px 0 3px!important}
+  .pgrid{grid-template-columns:repeat(4,1fr)!important;gap:5px!important}
+  .badge{border:1px solid #ccc!important;font-size:9pt!important}
+  @page{size:A4 portrait;margin:14mm 12mm 12mm 12mm}
+}
+.ph{display:none}
+.ph-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ph-logo{width:44px;height:44px;background:linear-gradient(135deg,#6366F1,#818CF8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ph-text{flex:1;padding-left:10px}
+.ph h2{font-size:15pt;font-weight:800;color:#1E293B}
+.ph p{font-size:9pt;color:#64748B;margin-top:2px}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;background:#F1F5F9;border-radius:8px;padding:8px 12px}
+.ph-item{font-size:8.5pt;color:#1E293B}
+.ph-item strong{display:block;font-size:7.5pt;color:#64748B;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER TOP -->
+<div id="iBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#6366F1,#4F46E5);color:#fff;padding:12px 14px;padding-top:max(12px,env(safe-area-inset-top));font-family:-apple-system,sans-serif">
+  <div style="font-size:15px;font-weight:800;margin-bottom:2px">⚡ App zum Homebildschirm!</div>
+  <div style="font-size:12px;opacity:.9">Safari: <strong>Teilen (□↑)</strong> → <strong>„Zum Home-Bildschirm"</strong> → Hinzufügen</div>
+  <button onclick="document.getElementById('iBanner').style.display='none';localStorage.setItem('ib','1')" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:18px;cursor:pointer">×</button>
+</div>
+
+<header class="hdr">
+  <button class="ib" id="btnBack" onclick="goBack()" style="display:none">←</button>
+  <div class="logo">⚡</div>
+  <div class="hdr-info">
+    <h1 id="hTitle">Monteur Rapport</h1>
+    <p id="hSub">© Emir. Entwicklung · Lorenzo Randazzo</p>
+  </div>
+  <div class="hdr-btns">
+    <button class="ib" onclick="openModal('modalInstall')" style="background:rgba(99,102,241,.35)">📲</button>
+    <button class="ib" id="btnPrint" style="display:none" onclick="window.print()">🖨️</button>
+  </div>
+</header>
+
+<div id="vhome" class="view active"></div>
+<div id="vform" class="view view-nb"></div>
+<div id="vdetail" class="view view-nb"></div>
+<div id="vtour" class="view"></div>
+<div id="vsettings" class="view"></div>
+
+<button class="fab" id="fab" onclick="startNew()">+</button>
+
+<nav class="bnav" id="bnav">
+  <button class="nb on" id="nb-home" onclick="showView('home')">
+    <span class="bi">📋</span>Rapporte
+  </button>
+  <button class="nb" id="nb-tour" onclick="showView('tour')">
+    <span class="bi">📍<span class="dot" id="tourDot"></span></span>Aufträge
+  </button>
+  <button class="nb" id="nb-set" onclick="showView('settings')">
+    <span class="bi">&#9881;</span>Einstellungen
+  </button>
+</nav>
+
+<input type="file" id="photoIn" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)">
+<input type="file" id="photoKam" accept="image/*" capture="environment" style="display:none" onchange="handlePhotos(event)">
+<input type="file" id="jsonIn" accept=".json" style="display:none" onchange="importJSON(event)">
+<input type="file" id="tourJsonIn" accept=".json" style="display:none" onchange="loadTourJSON(event)">
+<input type="file" id="xlsxIn" accept=".xlsx,.xls,.csv" style="display:none" onchange="importXLSX(event)">
+
+<div class="toast" id="toast"></div>
+
+<!-- INSTALL MODAL -->
+<div class="modal-bd" id="modalInstall" onclick="closeModal('modalInstall')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>📲 App installieren</h3>
+    <div style="background:#F1F5F9;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-weight:800;font-size:13px;margin-bottom:10px">Safari (iOS — empfohlen)</div>
+      <div style="font-size:13px;line-height:1.8">
+        1. Seite in <strong>Safari</strong> öffnen<br>
+        2. Unten <strong>Teilen (□↑)</strong> tippen<br>
+        3. <strong>„Zum Home-Bildschirm"</strong> wählen<br>
+        4. <strong>„Hinzufügen"</strong> bestätigen
+      </div>
+    </div>
+    <div style="background:#D1FAE5;border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;color:#065F46;line-height:1.5">
+      ✅ App funktioniert offline. Daten lokal gespeichert.<br>
+      Kollegen: Dieselbe URL — jeder hat eigene Daten.
+    </div>
+    <button class="btn btn-p btn-w" onclick="closeModal('modalInstall')">Verstanden ✓</button>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bd" id="modalExport" onclick="closeModal('modalExport')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>💾 Rapport speichern</h3>
+    <div class="modal-note">
+      📱 <strong>iPhone/iPad:</strong><br>
+      PDF → Drucken → mit 2 Fingern auf Vorschau → als PDF teilen<br>
+      Excel/JSON → In Dateien sichern
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-p btn-w" onclick="closeModal('modalExport');window.print()">📄 PDF / Drucken (DIN A4)</button>
+      <button class="btn btn-s btn-w" onclick="closeModal('modalExport');doXLS()">📊 Als Excel speichern</button>
+      <button class="btn btn-s btn-w" onclick="closeModal('modalExport');doJSON()">💾 Als JSON speichern</button>
+      <button class="btn btn-d btn-w" onclick="closeModal('modalExport')">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ============================================================
+// DATEN-KONSTANTEN
+// ============================================================
+
+var NETZBETREIBER = [
+  '— Bitte wählen —',
+  '50Hertz Transmission GmbH',
+  'Alliander Netz Heinsberg GmbH',
+  'Avacon Netz GmbH',
+  'Bayernwerk Netz GmbH',
+  'Bayernwerk Netz GmbH – Region Regensburg',
+  'E.DIS Netz GmbH',
+  'EAM Netz GmbH',
+  'ELE Verteilnetz GmbH',
+  'e-netz Südhessen AG',
+  'EnBW ODR AG',
+  'EnBW Regional AG',
+  'Energieversorgung Halle Netz GmbH',
+  'ENSO Netz GmbH',
+  'EWE NETZ GmbH',
+  'FairNetz GmbH',
+  'Hamburger Energiewerke Netz GmbH',
+  'Harz Energie Netz GmbH',
+  'KEVAG Telekom GmbH',
+  'LEW Verteilnetz GmbH',
+  'Licht- und Kraftwerke Helgoland GmbH',
+  'Mainova AG',
+  'MITNETZ STROM mbH (Mitteldeutsche Netzgesellschaft)',
+  'N-ERGIE Netz GmbH',
+  'Netz Lübeck GmbH',
+  'Netze BW GmbH',
+  'Netze Duisburg GmbH',
+  'Netz Halle GmbH',
+  'NetzGesellschaft Düsseldorf mbH',
+  'NEW Netz GmbH',
+  'Netzgesellschaft Osnabrück mbH',
+  'PESAG Netz GmbH',
+  'regionetz GmbH',
+  'Rhein-Sieg-Netz GmbH',
+  'RheinEnergie AG',
+  'Sachsen-Anhalt Netz (e.distherm)',
+  'Sachsen-Anhalt Netz GmbH',
+  'Schleswig-Holstein Netz AG',
+  'Stadtwerke Bielefeld Netz GmbH',
+  'Stadtwerke Bonn Netz GmbH',
+  'Stadtwerke Bremen AG',
+  'Stadtwerke Cottbus GmbH',
+  'Stadtwerke Dresden / DREWAG',
+  'Stadtwerke Düsseldorf Netz GmbH',
+  'Stadtwerke Erfurt Netz GmbH',
+  'Stadtwerke Essen AG',
+  'Stadtwerke Frankfurt am Main',
+  'Stadtwerke Göttingen AG',
+  'Stadtwerke Halle GmbH',
+  'Stadtwerke Hannover (enercity Netz)',
+  'Stadtwerke Kassel Netz GmbH',
+  'Stadtwerke Karlsruhe Netzservice GmbH',
+  'Stadtwerke Kiel AG',
+  'Stadtwerke Köln GmbH',
+  'Stadtwerke Leipzig GmbH',
+  'Stadtwerke Magdeburg (SWM) / MITNETZ',
+  'Stadtwerke Mainz Netz AG',
+  'Stadtwerke München (SWM)',
+  'Stadtwerke Münster GmbH',
+  'Stadtwerke Nürnberg GmbH',
+  'Stadtwerke Osnabrück AG',
+  'Stadtwerke Rostock Netzgesellschaft mbH',
+  'Stadtwerke Saarbrücken Netz AG',
+  'Stadtwerke Stuttgart GmbH',
+  'Stadtwerke Trier Netz GmbH',
+  'Stadtwerke Ulm/Neu-Ulm Netz GmbH',
+  'Stadtwerke Wuppertal Netz GmbH',
+  'STORAG ETZEL GmbH',
+  'Stromnetz Berlin GmbH',
+  'Stromnetz Hamburg GmbH',
+  'SÜWAG Energie AG',
+  'SWK Netze GmbH',
+  'Syna GmbH',
+  'Thüringer Energienetze GmbH & Co. KG',
+  'Überlandwerk Coburg GmbH',
+  'Westnetz GmbH',
+  'Westfalen Weser Netz GmbH',
+  'Sonstiger Netzbetreiber'
+];
+
+var AUFTRAGSTYPEN = [
+  { id: 'entstoerung',  name: 'Entstörung iMSys/SMGW', icon: '🔧', col: '#312E81' },
+  { id: 'zaehlertausch',name: 'Zählertausch',           icon: '🔄', col: '#064E3B' },
+  { id: 'sperrung',     name: 'Inkasso-Sperrung',        icon: '🔐', col: '#7F1D1D' },
+  { id: 'entsperrung',  name: 'Entsperrung',             icon: '🔓', col: '#1E3A5F' }
+];
+
+var GERAETE = [
+  { id: 'smgw',  name: 'SMGW',          icon: '📡' },
+  { id: 'imsys', name: 'iMSys-Zähler',  icon: '🔌' },
+  { id: 'komm',  name: 'Kommunikation', icon: '📶' },
+  { id: 'netz',  name: 'Netzqualität',  icon: '📈' },
+  { id: 'hak',   name: 'HAK',           icon: '🔒' },
+  { id: 'zs',    name: 'Zählerschrank', icon: '📦' }
+];
+
+var TAETIGKEIT_VORSCHLAEGE = [
+  '— Bitte wählen oder eigenen Text eingeben —',
+  // SMGW / Gateway
+  'SMGW neu gestartet (Power-Cycle) – Kommunikation wiederhergestellt',
+  'SMGW Firmware-Update durchgeführt und Verbindung geprüft',
+  'SMGW Antenne neu positioniert – Signalstärke verbessert',
+  'SMGW Außenantenne montiert – WAN-Verbindung stabilisiert',
+  'SIM-Karte gereinigt und neu eingesetzt – Verbindung wiederhergestellt',
+  'SMGW komplett getauscht und neu parametriert',
+  'SMGW remote durch EMT entsperrt und neu konfiguriert',
+  'SMGW TLS-Zertifikat erneuert – Datenaustausch wiederhergestellt',
+  // Zähler
+  'iMSys-Zähler ausgelesen – Werte übermittelt und dokumentiert',
+  'iMSys-Zähler neu gestartet – Kommunikation zum SMGW wiederhergestellt',
+  'HAN-Verbindung zwischen Zähler und SMGW neu aufgebaut',
+  'Zähler entsperrt – Versorgung wiederhergestellt',
+  'Zähler getauscht – Altzähler dokumentiert und für Rücksendung vorbereitet',
+  // Kommunikation
+  'Mobilfunkempfang vor Ort geprüft – Signalstärke ausreichend',
+  'Signalstärke mit PROFiTEST MF XTRA gemessen und protokolliert',
+  'Antennenkabel geprüft und getauscht – Verbindung stabilisiert',
+  'Alternativen Frequenzband / Provider getestet',
+  // HAK
+  'HAK geöffnet, NH-Sicherungen geprüft und wiedereingesetzt (AuS-Qualifikation)',
+  'NH-Sicherung getauscht – Versorgung wiederhergestellt',
+  'HAK versiegelt und Wiedereinschaltung dokumentiert',
+  // Zählerschrank
+  'Zählerplatz auf VDE-AR-N 4102 geprüft – kein Mangel festgestellt',
+  'Klemmen nachgezogen und Verdrahtung überprüft',
+  'Zählerschrank gereinigt und Plombierung erneuert',
+  // Zählertausch
+  'Altzähler ausgebaut und Neuzähler eingebaut – Anlauf geprüft',
+  'Klemmen festgezogen (Anzugsmoment), Verdrahtung L1/L2/L3/N/PE geprüft',
+  'Zählerstand Altzähler und Neuzähler dokumentiert und fotografiert',
+  // Sperrung
+  'Sperrung durchgeführt – Sperrplombe angebracht, Zählerstand dokumentiert',
+  'Dreiphasige Sperrung (L1/L2/L3) durchgeführt und protokolliert',
+  // Entsperrung
+  'Sperreinrichtung entfernt – Zähler entsperrt, Anlauf geprüft',
+  'Entsperrprotokoll erstellt und Auftraggeber informiert',
+  // Allgemein
+  'Spannungen L1/L2/L3 gemessen und dokumentiert – Werte i.O.',
+  'Messung nach EN 50160 durchgeführt – Grenzwerte eingehalten',
+  'Netzbetreiber / MSB über Ergebnis informiert, Ticket geschlossen'
+];
+
+var FEHLERBILDER = [
+  '— Bitte wählen —',
+  // SMGW / Gateway
+  'Keine WAN-Verbindung (SMGW) – kein Mobilfunksignal',
+  'SMGW offline – kein Ping, kein Datenaustausch mit Netzbetreiber',
+  'SMGW hängt / neu starten erforderlich',
+  'SMGW Firmware veraltet – Update erforderlich',
+  'SMGW TLS-Zertifikat abgelaufen',
+  'SMGW Hardwaredefekt – Austausch erforderlich',
+  'SMGW LED-Fehleranzeige aktiv',
+  // Kommunikation
+  'Schlechter Mobilfunkempfang am Installationsort',
+  'Antenne defekt oder falsch montiert',
+  'SIM-Karte defekt oder falscher APN',
+  'WAN-Verbindung instabil / Verbindungsabbrüche',
+  // HAN / Zähler
+  'Kein Datenaustausch HAN (Gateway ↔ Zähler)',
+  'iMSys-Zähler nicht auslesbar (SML)',
+  'LMN-Verbindung unterbrochen – keine GW/Zähler-Verbindung',
+  'iMSys meldet keine Messwerte',
+  'Zähler gesperrt / verriegelt (Inkasso)',
+  'Zähler Hardwaredefekt – Austausch erforderlich',
+  'RTC-Uhr falsch / nicht synchronisiert',
+  // HAK
+  'HAK-Sicherung ausgelöst – Spannungsausfall',
+  'Überstromsicherung defekt',
+  'Phasenausfall L1 / L2 / L3',
+  // Netz
+  'Netzqualitätsproblem gemäß EN 50160',
+  'Spannungseinbrüche / Spannungsüberhöhungen',
+  'Oberschwingungen / THD überhöht',
+  'Frequenzabweichung außerhalb Toleranz',
+  // Zählerplatz
+  'Mangel am Zählerplatz (VDE-AR-N 4102)',
+  'Fehlverdrahtung / Klemmenfehler',
+  'Plombierung fehlt oder beschädigt',
+  // Allgemein
+  'Kundenzugang nicht möglich – Folgetermin erforderlich',
+  'Kommunikationsfehler – Ursache unklar',
+  'Sonstiger Fehler'
+];
+
+var MASS = {
+  smgw: [
+    'Neustart SMGW (Power-Cycle)',
+    'Firmware-Version geprüft und dokumentiert',
+    'Alarm-LEDs und Gerätestatus ausgewertet',
+    'Logdaten / Ereignisprotokoll ausgelesen',
+    'SMGW-Konfiguration überprüft',
+    'TLS-Zertifikat auf Gültigkeit geprüft',
+    'Rollout-Status beim EMT abgefragt',
+    'WAN-Verbindung (Mobilfunk) überprüft',
+    'Signalstärke RSRP gemessen (dBm)',
+    'Signalqualität RSRQ / SINR gemessen',
+    'Antenne auf festen Sitz und Beschädigung geprüft',
+    'Antenne versetzt / neu ausgerichtet',
+    'Antennenposition optimiert (höher / andere Wandseite)',
+    'Magnetfuß-Außenantenne montiert',
+    'Außenantenne mit Verlängerungskabel installiert',
+    'SIM-Karte überprüft, gereinigt, neu eingesteckt',
+    'SIM-Karte getauscht',
+    'Alternativprovider / Frequenzband getestet',
+    'HAN-Verbindung zum iMSys-Zähler geprüft',
+    'HAN-Protokoll / wM-Bus überprüft',
+    'CLS-Schnittstelle überprüft',
+    'SMGW neu parametriert / konfiguriert',
+    'Remote-Zugang durch EMT hergestellt',
+    'SMGW getauscht und neu in Betrieb genommen',
+    'Austauschprotokoll SMGW erstellt',
+    'EMT / MSB über Entstörung informiert',
+    'Ticket beim Netzbetreiber erstellt / geschlossen'
+  ],
+  imsys: [
+    'Zählerstand bei Ankunft abgelesen und notiert',
+    'Zählerstand bei Abgang notiert',
+    'Seriennummer / Fabrikat dokumentiert',
+    'Zähler via optische Schnittstelle ausgelesen (SML)',
+    'Wirkarbeit OBIS 1.8.0 / 2.8.0 ausgelesen',
+    'Blindleistung OBIS 3.8.0 / 4.8.0 ausgelesen',
+    'Fehlerregister und Statusbytes ausgelesen',
+    'RTC-Uhrzeit überprüft / synchronisiert',
+    'Zähler entsperrt / Freigabe erteilt',
+    'PIN-Code überprüft / zurückgesetzt',
+    'Zähler neugestartet (Power-Cycle)',
+    'Zähler vollständig getauscht',
+    'Austauschprotokoll Zähler erstellt',
+    'Plombierung erneuert',
+    'MSB / Netzbetreiber informiert'
+  ],
+  komm: [
+    'Signalstärke WAN gemessen (dBm / RSRP)',
+    'Signalqualität RSRQ / SINR gemessen',
+    'Verbindungstest durchgeführt',
+    'SIM-Karte überprüft, gereinigt, neu eingesteckt',
+    'SIM-Karte getauscht',
+    'APN-Einstellungen überprüft und korrigiert',
+    'Antenne auf festen Sitz und Beschädigung geprüft',
+    'Antenne versetzt / neu ausgerichtet',
+    'Antennenposition schrittweise optimiert',
+    'Antenne auf Außenwand / Dach montiert',
+    'Externes Antennenkabel geprüft / getauscht',
+    'Magnetfuß-Antenne eingesetzt',
+    'Richtantenne (Yagi / Panel) eingesetzt',
+    'Außenantenne mit Verlängerungskabel installiert',
+    'Kommunikationsmodul neugestartet',
+    'Kommunikationsmodul getauscht',
+    'Alternativprovider getestet'
+  ],
+  netz: [
+    'Messung gemäß EN 50160 durchgeführt',
+    'Messprotokoll nach EN 50160 erstellt',
+    'Nennspannung und Ist-Spannung gemessen (L1/L2/L3)',
+    'Spannungsasymmetrie gemessen',
+    'Spannungseinbrüche (Dips) erfasst',
+    'Spannungsüberhöhungen (Swells) erfasst',
+    'Kurzunterbrechungen < 3 s dokumentiert',
+    'Frequenzabweichung gemessen',
+    'THD-U gemessen L1/L2/L3',
+    'THD-I gemessen',
+    'Oberschwingungen 3./5./7. Harmonische gemessen',
+    'Flicker Pst gemessen',
+    'Leistungsfaktor cos phi gemessen',
+    'Messergebnis an Netzbetreiber übermittelt'
+  ],
+  hak: [
+    'HAK geöffnet (AuS-Qualifikation, DGUV V3)',
+    'Freischaltung durchgeführt und gesichert',
+    'NH-Sicherungen auf Sitz und Zustand geprüft',
+    'Sicherungstyp und Nennstrom dokumentiert',
+    'Spannung L1/L2/L3/N an HAK gemessen',
+    'Phasenfolge überprüft',
+    'Klemmen auf Sitz und Oxidation geprüft',
+    'Leitungsquerschnitte und Isolierung geprüft',
+    'PE / Schutzleiter geprüft',
+    'HAK gereinigt',
+    'NH-Sicherung(en) gewechselt',
+    'Kabelanschlüsse erneuert',
+    'HAK geschlossen und korrekt versiegelt',
+    'Wiedereinschaltung dokumentiert'
+  ],
+  zs: [
+    'Zählerplatz auf VDE-AR-N 4102 überprüft',
+    'Verdrahtung vollständig überprüft',
+    'Klemmen nachgezogen',
+    'Leitungsquerschnitte überprüft',
+    'Plombierung und Siegel überprüft',
+    'Stromwandler geprüft',
+    'Hilfsstromversorgung (230 V SMGW) überprüft',
+    'Erdung des Zählerschranks geprüft',
+    'Zählerschrank gereinigt',
+    'Schaltplan aktualisiert',
+    'Zählerschrank nach VDE-AR-N 4102 versiegelt'
+  ],
+  zt_vorbereitung: [
+    'Auftrag und Kundendaten beim Netzbetreiber geprüft',
+    'Neuen Zähler auf Vollständigkeit geprüft',
+    'Zählernummer Altzähler dokumentiert',
+    'Plomben und Siegel fotografiert (vor Öffnung)',
+    'Einbauort / Zählerplatz begutachtet',
+    'Kundenschlüssel / Zugang koordiniert'
+  ],
+  zt_ausbau: [
+    'Freischaltung durchgeführt (Sicherung/HAK)',
+    'Spannungsfreiheit vor Ausbau geprüft',
+    'Zählerstand Altzähler final abgelesen und dokumentiert',
+    'Zählerstand fotografiert',
+    'Altzähler ausgebaut',
+    'Klemmleiste auf Zustand geprüft',
+    'Klemmen gereinigt und auf Sitz geprüft',
+    'Leitungsquerschnitte und Isolierung geprüft'
+  ],
+  zt_einbau: [
+    'Neuzähler eingebaut',
+    'Zählernummer Neuzähler dokumentiert',
+    'Klemmen festgezogen (Anzugsmoment)',
+    'Verdrahtung geprüft (L1, L2, L3, N, PE)',
+    'Spannungsversorgung wiederhergestellt',
+    'Zähleranlauf geprüft (alle 3 Phasen)',
+    'Zählerstand Neuzähler bei Inbetriebnahme notiert',
+    'Zählerstand fotografiert',
+    'Schutzklasse und Schutzleiter geprüft',
+    'Plombierung erneuert und dokumentiert',
+    'Zählerschrank geschlossen und versiegelt',
+    'Wiedereinschaltprotokoll erstellt'
+  ],
+  zt_smgw: [
+    'SMGW auf neuen Zähler konfiguriert',
+    'HAN-Verbindung zum Neuzähler geprüft',
+    'iMSys-Registrierung beim EMT veranlasst',
+    'Kommunikationstest SMGW → Netzbetreiber'
+  ],
+  zt_abschluss: [
+    'Altzähler für Rücksendung vorbereitet',
+    'Rückgabeprotokoll Altzähler erstellt',
+    'Einbauprotokoll / Montagebericht erstellt',
+    'Netzbetreiber / MSB informiert',
+    'Kunden über neuen Zählerstand informiert',
+    'Unterschrift des Kunden eingeholt'
+  ],
+  sperr_vorbereitung: [
+    'Sperrauftrag erhalten und geprüft',
+    'Kundendaten und Adresse verifiziert',
+    'Sperrgrund dokumentiert',
+    'Mögliche Gefährdung / besondere Umstände geprüft',
+    'Sperrankündigung vorhanden / zugestellt geprüft',
+    'Sperrung via Haushaltsschutzprüfung zulässig'
+  ],
+  sperr_durchfuehrung: [
+    'Anwesenheit des Kunden geprüft',
+    'Zähler / HAK gesperrt (mechanisch)',
+    'Einphasige Sperrung L1 durchgeführt',
+    'Dreiphasige Sperrung (L1/L2/L3) durchgeführt',
+    'Sperreinrichtung montiert und gesichert',
+    'Sperrplombe angebracht',
+    'Notbeleuchtung / Sicherheitseinrichtungen geprüft'
+  ],
+  sperr_doku: [
+    'Sperrzählerstand abgelesen und dokumentiert',
+    'Sperrzählerstand fotografiert',
+    'Sperrprotokoll erstellt',
+    'Sperrung dem Auftraggeber rückgemeldet',
+    'Haushaltsschutz-Checkliste ausgefüllt',
+    'PSA getragen'
+  ],
+  entsperr: [
+    'Entsperrauftrag erhalten und geprüft',
+    'Zahlungsnachweis / Freigabe geprüft',
+    'Kundendaten verifiziert',
+    'Sperreinrichtung entfernt',
+    'Plombe entfernt und dokumentiert',
+    'Zähler / HAK entsperrt',
+    'Anlauf des Zählers geprüft',
+    'Zählerstand bei Entsperrung notiert',
+    'Zählerstand fotografiert',
+    'Entsperrprotokoll erstellt',
+    'Entsperrung dem Auftraggeber rückgemeldet',
+    'Unterschrift des Kunden eingeholt'
+  ]
+};
+
+var STD_MV = {
+  entstoerung: [
+    {p:'Spannung L1-N',w:'',e:'V',ok:null},
+    {p:'Spannung L2-N',w:'',e:'V',ok:null},
+    {p:'Spannung L3-N',w:'',e:'V',ok:null},
+    {p:'Frequenz',w:'',e:'Hz',ok:null},
+    {p:'WAN RSRP',w:'',e:'dBm',ok:null},
+    {p:'WAN RSRQ',w:'',e:'dB',ok:null},
+    {p:'THD-U L1',w:'',e:'%',ok:null},
+    {p:'cos phi',w:'',e:'—',ok:null}
+  ],
+  zaehlertausch: [
+    {p:'Spannung L1-N',w:'',e:'V',ok:null},
+    {p:'Spannung L2-N',w:'',e:'V',ok:null},
+    {p:'Spannung L3-N',w:'',e:'V',ok:null},
+    {p:'Frequenz',w:'',e:'Hz',ok:null},
+    {p:'Zählerstand Alt',w:'',e:'kWh',ok:null},
+    {p:'Zählerstand Neu (Start)',w:'',e:'kWh',ok:null},
+    {p:'Wirkleistung P',w:'',e:'kW',ok:null}
+  ],
+  sperrung: [
+    {p:'Spannung L1-N vor Sperrung',w:'',e:'V',ok:null},
+    {p:'Zählerstand bei Sperrung',w:'',e:'kWh',ok:null}
+  ],
+  entsperrung: [
+    {p:'Spannung L1-N nach Entsperrung',w:'',e:'V',ok:null},
+    {p:'Zählerstand bei Entsperrung',w:'',e:'kWh',ok:null}
+  ]
+};
+
+var KW_COL = {KW20:'#3B82F6', KW21:'#22C55E', KW22:'#8B5CF6'};
+
+// ============================================================
+// STATE
+// ============================================================
+var reports = [];
+var cur = null;
+var curView = 'home';
+var prevView = 'home';
+var tourData = null;
+var allAuftr = [];
+var tourDone = new Set();
+var tourFilter = 'all';
+var tourQ = '';
+var _tt = null;
+var sigC, sigX, sigDraw = false, sigHas = false;
+
+try { reports = JSON.parse(localStorage.getItem('rapport_v4') || '[]'); } catch(e) { reports = []; }
+try { var _td = localStorage.getItem('rapport_tourdata'); if (_td) { tourData = JSON.parse(_td); procTour(); } } catch(e) {}
+try { tourDone = new Set(JSON.parse(localStorage.getItem('rapport_tdone') || '[]')); } catch(e) { tourDone = new Set(); }
+
+function persist() {
+  try { localStorage.setItem('rapport_v4', JSON.stringify(reports)); }
+  catch(e) { toast('⚠️ Speicher voll! Bitte Rapporte als JSON exportieren.'); }
+}
+
+function mkRapport() {
+  var now = new Date();
+  var z2 = function(n) { return String(n).padStart(2,'0'); };
+  return {
+    id: Date.now().toString(),
+    createdAt: now.toISOString(),
+    status: 'offen',
+    auftragstyp: 'entstoerung',
+    tourNr: null,
+    sd: {
+      datum: now.getFullYear()+'-'+z2(now.getMonth()+1)+'-'+z2(now.getDate()),
+      zeit: z2(now.getHours())+':'+z2(now.getMinutes()),
+      techniker:'', firma:'', auftraggeber:'', netzbetreiber:'',
+      adresse:'', kundenname:'', kundennr:'', auftragsnr:'',
+      zaehlernr_alt:'', zaehlernr_neu:'', melo:''
+    },
+    geraete:[], stoer:{art:'',code:'',seit:'',beschr:''},
+    taetigkeitText:'',
+    massn:{}, messwerte:[], fotos:[], sig:'', notizen:'',
+    _prefilled:false, _mapsUrl:''
+  };
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showView(v) {
+  prevView = curView;
+  curView = v;
+  document.querySelectorAll('.view').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('v'+v).classList.add('active');
+  var bB = document.getElementById('btnBack');
+  var bP = document.getElementById('btnPrint');
+  var fab = document.getElementById('fab');
+  var nav = document.getElementById('bnav');
+  var ht = document.getElementById('hTitle');
+  var hs = document.getElementById('hSub');
+  document.querySelectorAll('.nb').forEach(function(b) { b.classList.remove('on'); });
+
+  if (v === 'home') {
+    bB.style.display = 'none'; bP.style.display = 'none';
+    fab.className = 'fab'; nav.className = 'bnav';
+    ht.textContent = 'Monteur Rapport';
+    hs.textContent = '© Emir. Entwicklung · Lorenzo Randazzo';
+    document.getElementById('nb-home').classList.add('on');
+    renderHome();
+  } else if (v === 'tour') {
+    bB.style.display = 'none'; bP.style.display = 'none';
+    fab.className = 'fab hide'; nav.className = 'bnav';
+    ht.textContent = 'Aufträge'; hs.textContent = 'Tourenplan · Westnetz Bremen';
+    document.getElementById('nb-tour').classList.add('on');
+    renderTour();
+  } else if (v === 'form') {
+    bB.style.display = 'flex'; bP.style.display = 'none';
+    fab.className = 'fab hide'; nav.className = 'bnav hide';
+    var t = AUFTRAGSTYPEN.find(function(x){return x.id===cur.auftragstyp;}) || {name:'Rapport'};
+    ht.textContent = t.name;
+    hs.textContent = cur.sd.adresse || 'Adresse eingeben';
+    renderForm();
+  } else if (v === 'settings') {
+    bB.style.display = 'none'; bP.style.display = 'none';
+    fab.className = 'fab hide'; nav.className = 'bnav';
+    ht.textContent = 'Einstellungen'; hs.textContent = 'Profil & eigene Eintraege';
+    document.getElementById('nb-set').classList.add('on');
+    renderSettings();
+  } else {
+    bB.style.display = 'flex'; bP.style.display = 'flex';
+    fab.className = 'fab hide'; nav.className = 'bnav hide';
+    var tdet = AUFTRAGSTYPEN.find(function(x){return x.id===cur.auftragstyp;}) || {name:'Rapport'};
+    ht.textContent = tdet.name; hs.textContent = cur.sd.adresse || '---';
+    renderDetail();
+  }
+  window.scrollTo(0,0);
+}
+
+function goBack() {
+  if (curView === 'form' || curView === 'detail') showView(prevView === 'tour' ? 'tour' : 'home');
+  else showView('home');
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  if (_tt) clearTimeout(_tt);
+  _tt = setTimeout(function() { el.classList.remove('show'); }, 3200);
+}
+
+function xe(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome() {
+  var el = document.getElementById('vhome');
+  var offen = reports.filter(function(r){return r.status==='offen';}).length;
+  var total = reports.length;
+  var cards = '';
+  if (!total) {
+    cards = '<div class="empty"><div class="empty-ico">📋</div><h3>Noch keine Rapporte</h3><p>Tippe <strong>+</strong> für neuen Rapport<br>oder wähle unter <strong>Aufträge</strong> einen Tourstop.</p></div>';
+  } else {
+    var sorted = reports.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+    sorted.forEach(function(r) {
+      var d = new Date(r.createdAt).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'});
+      var t = AUFTRAGSTYPEN.find(function(x){return x.id===r.auftragstyp;}) || {name:'Rapport',icon:'📋',col:'#1E293B'};
+      var bc = r.status==='offen' ? 'b-open' : 'b-done';
+      var bl = r.status==='offen' ? 'Offen' : 'Fertig';
+      var sub = '';
+      if (r.tourNr) sub += '<span class="chip">📍 Nr.'+r.tourNr+'</span>';
+      if (r.sd.auftraggeber) sub += '<span class="chip">'+xe(r.sd.auftraggeber)+'</span>';
+      cards += '<div class="rcard" onclick="openRapport(\''+r.id+'\')">'
+        +'<div class="rcard-top">'
+        +'<div class="rc-ico" style="background:'+t.col+'">'+t.icon+'</div>'
+        +'<div class="rcard-info">'
+        +'<div class="rcard-addr">'+xe(r.sd.adresse||'Adresse fehlt')+'</div>'
+        +'<div class="rcard-meta">'+t.name+' · '+d+' · '+xe(r.sd.techniker||'—')+'</div>'
+        +'</div>'
+        +'<span class="badge '+bc+'">'+bl+'</span>'
+        +'</div>'
+        +(sub?'<div class="rcard-sub">'+sub+'</div>':'')
+        +'</div>';
+    });
+  }
+  el.innerHTML = '<div class="hero"><h2>Monteur Rapport</h2>'
+    +'<p>Entstörung · Zählertausch · Sperrung · Entsperrung</p>'
+    +'<div class="stat-row">'
+    +'<div class="stat"><div class="stat-n">'+total+'</div><div class="stat-l">Gesamt</div></div>'
+    +'<div class="stat"><div class="stat-n">'+offen+'</div><div class="stat-l">Offen</div></div>'
+    +'<div class="stat"><div class="stat-n">'+(total-offen)+'</div><div class="stat-l">Fertig</div></div>'
+    +'</div></div>'
+    +'<div class="sec-hdr"><span class="sec-lbl">Aktionen</span></div>'
+    +'<div class="acts">'
+    +'<button class="act-btn" onclick="document.getElementById(\'jsonIn\').click()">📥 Rapporte importieren</button>'
+    +'<button class="act-btn" onclick="exportAll()">📤 Alle exportieren</button>'
+    +'<button class="act-btn" onclick="document.getElementById(\'xlsxIn\').click()">📊 Excel-Liste laden</button>'
+    +'</div>'
+    +'<div class="sec-hdr"><span class="sec-lbl">Rapporte</span>'
+    +(total?'<span style="font-size:12px;color:var(--muted)">Tippen zum Öffnen</span>':'')
+    +'</div>'
+    +cards
+    +'<div class="copy">© 2025 Lorenzo Randazzo · Emir. Entwicklung<br>Alle Rechte vorbehalten</div>'
+    +'<div style="height:30px"></div>';
+}
+
+function startNew() { cur = mkRapport(); prevView = curView; showView('form'); }
+function openRapport(id) {
+  var r = reports.find(function(x){return x.id===id;});
+  if (!r) return;
+  if (!r.geraete) r.geraete = [];
+  if (!r.massn) r.massn = {};
+  if (!r.messwerte) r.messwerte = [];
+  if (!r.fotos) r.fotos = [];
+  if (!r.sig) r.sig = '';
+  if (!r.stoer) r.stoer = {art:'',code:'',seit:'',beschr:''};
+  if (!r.taetigkeitText) r.taetigkeitText = '';
+  if (!r.notizen) r.notizen = '';
+  if (!r._mapsUrl) r._mapsUrl = '';
+  if (!r.auftragstyp) r.auftragstyp = 'entstoerung';
+  if (!r.status) r.status = 'offen';
+  if (!r.sd) r.sd = {datum:'',zeit:'',techniker:'',firma:'',auftraggeber:'',netzbetreiber:'',adresse:'',kundenname:'',kundennr:'',auftragsnr:'',zaehlernr_alt:'',zaehlernr_neu:'',melo:''};
+  cur = r; prevView = 'home'; showView('detail');
+}
+
+// ============================================================
+// EXCEL UPLOAD
+// ============================================================
+function importXLSX(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  // CSV support natively
+  if (file.name.toLowerCase().endsWith('.csv')) {
+    var rd = new FileReader();
+    rd.onload = function(e) { parseCSV(e.target.result); };
+    rd.readAsText(file, 'UTF-8');
+    event.target.value = '';
+    return;
+  }
+  // For .xlsx we use simple binary read and look for text patterns
+  // Full SheetJS not available, so we'll use FileReader as ArrayBuffer
+  // and extract visible strings (works for simple xlsx)
+  var rd = new FileReader();
+  rd.onload = function(e) {
+    try {
+      // Try to parse as text first (some xls are actually CSV/HTML)
+      var text = '';
+      var arr = new Uint8Array(e.target.result);
+      // Check for XML/HTML content (xlsx is a zip, we need sharedStrings)
+      // For simplicity, show instructions
+      toast('✅ Excel geladen – bitte als CSV exportieren für beste Ergebnisse');
+      showXlsxHint();
+    } catch(err) { toast('❌ Fehler: '+err.message); }
+  };
+  rd.readAsArrayBuffer(file);
+  event.target.value = '';
+}
+
+function parseCSV(text) {
+  var lines = text.split(/\r?\n/).filter(function(l){return l.trim();});
+  if (lines.length < 2) { toast('⚠️ CSV leer oder ungültig'); return; }
+  // Parse header
+  var sep = lines[0].indexOf(';') > -1 ? ';' : ',';
+  var headers = lines[0].split(sep).map(function(h){return h.trim().replace(/^"|"$/g,'').toLowerCase();});
+  var added = 0;
+  for (var i=1; i<lines.length; i++) {
+    var vals = lines[i].split(sep).map(function(v){return v.trim().replace(/^"|"$/g,'');});
+    if (!vals.length || !vals[0]) continue;
+    var row = {};
+    headers.forEach(function(h,j){ row[h] = vals[j] || ''; });
+    // Map common field names
+    var r = mkRapport();
+    r.sd.adresse     = row['adresse']||row['strasse']||row['address']||row['straße']||'';
+    r.sd.kundenname  = row['kunde']||row['kundenname']||row['name']||row['customer']||'';
+    r.sd.kundennr    = row['kundennr']||row['kundennummer']||row['kunden-nr']||row['customernr']||'';
+    r.sd.auftragsnr  = row['auftragsnr']||row['auftrag']||row['nr']||row['lfd. nr.']||row['lfd.nr.']||'';
+    r.sd.zaehlernr_alt = row['zähler']||row['zaehlernr']||row['zählernummer']||row['serial']||row['zaehler']||'';
+    r.sd.netzbetreiber = row['netzbetreiber']||row['netz']||'';
+    r.sd.auftraggeber  = row['auftraggeber']||row['ag']||'';
+    r.stoer.beschr   = row['fehler']||row['fehlerbeschreibung']||row['fehlerbilder']||row['störung']||row['stoerung']||'';
+    r.sd.techniker   = row['techniker']||row['monteur']||'';
+    r.sd.firma       = row['firma']||'';
+    r.sd.datum       = row['datum']||r.sd.datum;
+    if (!r.sd.adresse && !r.sd.kundenname) continue;
+    var gw = row['gateway']||row['gw']||row['gateway-nr']||'';
+    if (gw) r.stoer.beschr += (r.stoer.beschr?'\nGateway-Nr.: ':'')+gw;
+    var melo = row['melo']||row['melo-id']||'';
+    if (melo) r.sd.melo = melo;
+    reports.push(r);
+    added++;
+  }
+  if (added) { persist(); renderHome(); toast('✅ '+added+' Rapporte aus CSV erstellt'); }
+  else toast('⚠️ Keine gültigen Zeilen gefunden. Spalten prüfen.');
+}
+
+function showXlsxHint() {
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:9999;display:flex;align-items:flex-end';
+  ov.innerHTML = '<div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 16px;padding-bottom:max(28px,var(--sbot));width:100%">'
+    +'<h3 style="font-size:17px;font-weight:800;margin-bottom:12px">📊 Excel-Liste verwenden</h3>'
+    +'<p style="font-size:13px;color:#334155;line-height:1.7;margin-bottom:14px">Für beste Ergebnisse die Excel-Datei als <strong>CSV (Semikolon-getrennt)</strong> speichern:<br><br>'
+    +'1. Excel öffnen → <strong>Datei → Speichern unter</strong><br>'
+    +'2. Format: <strong>CSV UTF-8 (Semikolon)</strong><br>'
+    +'3. CSV-Datei hier hochladen<br><br>'
+    +'<strong>Unterstützte Spalten:</strong><br>'
+    +'Adresse, Kunde, KundenNr, AuftragsNr, Zähler, Gateway, Netzbetreiber, Fehler, Datum, Techniker</p>'
+    +'<button onclick="this.closest(\'div\').parentNode.remove()" class="btn btn-p btn-w">Verstanden</button>'
+    +'</div>';
+  document.body.appendChild(ov);
+}
+
+// ============================================================
+// TOUR
+// ============================================================
+function loadTourJSON(event) {
+  var file = event.target.files[0]; if (!file) return;
+  var rd = new FileReader();
+  rd.onload = function(e) {
+    try {
+      tourData = JSON.parse(e.target.result);
+      localStorage.setItem('rapport_tourdata', e.target.result);
+      procTour();
+      toast('✅ '+allAuftr.length+' Aufträge geladen!');
+      document.getElementById('tourDot').style.display = 'block';
+      renderTour();
+    } catch(err) { toast('❌ JSON-Fehler: '+err.message); }
+  };
+  rd.readAsText(file); event.target.value = '';
+}
+
+function procTour() {
+  allAuftr = [];
+  if (!tourData || !tourData.wochen) return;
+  tourData.wochen.forEach(function(w) {
+    w.tage.forEach(function(tag) {
+      (tag.auftraege||[]).forEach(function(a) {
+        allAuftr.push(Object.assign({}, a, {kw:w.kw, datum:tag.datum, wochentag:tag.wochentag}));
+      });
+    });
+  });
+  var dot = document.getElementById('tourDot');
+  if (dot) dot.style.display = allAuftr.length ? 'block' : 'none';
+}
+
+function setFilter(f) {
+  tourFilter = f;
+  document.querySelectorAll('.fchip').forEach(function(c){c.classList.remove('on');});
+  var c = document.querySelector('.fchip[data-f="'+f+'"]');
+  if (c) c.classList.add('on');
+  renderTourList();
+}
+
+function renderTour() {
+  var el = document.getElementById('vtour');
+  if (!tourData || !allAuftr.length) {
+    el.innerHTML = '<label class="import-box" for="tourJsonIn">'
+      +'<div class="imp-ico">📂</div><h3>Tourplan laden</h3>'
+      +'<p>Tippe hier um die JSON-Tourplanung zu importieren.<br><strong>tourenplan_kw20_22.json</strong></p>'
+      +'</label>'
+      +'<div class="empty"><div class="empty-ico">💡</div><h3>Kein Tourplan geladen</h3>'
+      +'<p>JSON importieren und alle Aufträge erscheinen hier zum schnellen Öffnen.</p></div>';
+    return;
+  }
+  var kwCards = '';
+  tourData.wochen.forEach(function(w) {
+    var cnt = w.tage.reduce(function(s,t){return s+(t.auftraege||[]).length;},0);
+    var col = KW_COL[w.kw]||'#94A3B8';
+    var zeit = (w.zeitraum||'').split('–')[0].trim();
+    kwCards += '<div class="kw-card" onclick="setFilter(\''+w.kw.toLowerCase()+'\')">'
+      +'<div class="kw-name" style="color:'+col+'">'+w.kw+'</div>'
+      +'<div class="kw-n">'+cnt+'</div>'
+      +'<div class="kw-sub">'+zeit+'</div>'
+      +'</div>';
+  });
+  var done = tourDone.size, total = allAuftr.length;
+  el.innerHTML = '<div class="tour-hero"><h2>📍 Aufträge Bremen</h2>'
+    +'<p>'+(tourData.meta?xe(tourData.meta.zeitraum):'')+'  ·  '+done+' von '+total+' erledigt</p>'
+    +'<div class="kw-cards">'+kwCards+'</div></div>'
+    +'<div class="toolbar">'
+    +'<div class="filter-row">'
+    +'<button class="fchip'+(tourFilter==='all'?' on':'')+'" data-f="all" onclick="setFilter(\'all\')">Alle</button>'
+    +'<button class="fchip'+(tourFilter==='p1'?' on':'')+'" data-f="p1" onclick="setFilter(\'p1\')">⚠ Prio 1</button>'
+    +'<button class="fchip'+(tourFilter==='offen'?' on':'')+'" data-f="offen" onclick="setFilter(\'offen\')">Offen</button>'
+    +'<button class="fchip'+(tourFilter==='done'?' on':'')+'" data-f="done" onclick="setFilter(\'done\')">Erledigt</button>'
+    +'<button class="fchip'+(tourFilter==='kw20'?' on':'')+'" data-f="kw20" onclick="setFilter(\'kw20\')">KW20</button>'
+    +'<button class="fchip'+(tourFilter==='kw21'?' on':'')+'" data-f="kw21" onclick="setFilter(\'kw21\')">KW21</button>'
+    +'<button class="fchip'+(tourFilter==='kw22'?' on':'')+'" data-f="kw22" onclick="setFilter(\'kw22\')">KW22</button>'
+    +'</div>'
+    +'<div class="search-wrap"><input class="s-inp" type="search" id="tourQ" placeholder="🔍  Adresse, Kunde, Nr. …" value="'+xe(tourQ)+'" oninput="tourQ=this.value;renderTourList()"></div>'
+    +'</div>'
+    +'<div id="tourList" style="padding:8px 0 4px"></div>'
+    +'<div style="margin:0 12px 8px">'
+    +'<label class="act-btn btn-w" for="tourJsonIn" style="display:block;text-align:center;cursor:pointer">↻ Tourplan aktualisieren</label>'
+    +'</div><div style="height:20px"></div>';
+  renderTourList();
+}
+
+function renderTourList() {
+  var listEl = document.getElementById('tourList'); if (!listEl) return;
+  var q = tourQ.toLowerCase();
+  var grouped = {};
+  allAuftr.forEach(function(a) {
+    if (!a.nr) return;
+    if (tourFilter==='p1' && a.prioritaet!==1) return;
+    if (tourFilter==='offen' && tourDone.has(a.nr)) return;
+    if (tourFilter==='done' && !tourDone.has(a.nr)) return;
+    if (tourFilter==='kw20' && a.kw!=='KW20') return;
+    if (tourFilter==='kw21' && a.kw!=='KW21') return;
+    if (tourFilter==='kw22' && a.kw!=='KW22') return;
+    if (q) {
+      var str = (a.strasse+a.kunde+String(a.nr)+a.fehler).toLowerCase();
+      if (!str.includes(q)) return;
+    }
+    var key = a.datum+'|'+a.wochentag+'|'+a.kw;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(a);
+  });
+  var keys = Object.keys(grouped).sort();
+  if (!keys.length) {
+    listEl.innerHTML = '<div class="empty" style="padding:30px 32px"><div class="empty-ico">🔍</div><p>Keine Aufträge gefunden.</p></div>';
+    return;
+  }
+  var html = '';
+  keys.forEach(function(key) {
+    var parts = key.split('|'), datum=parts[0], wt=parts[1], kw=parts[2];
+    var items = grouped[key], col = KW_COL[kw]||'#94A3B8';
+    var d = new Date(datum), ds = d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    html += '<div class="day-group">'
+      +'<div class="day-lbl">'
+      +'<span class="day-dot" style="background:'+col+'"></span>'+wt+', '+ds
+      +'<span class="day-kw" style="background:'+col+'22;color:'+col+'">'+kw+'</span>'
+      +'<span class="day-cnt">'+items.length+'</span>'
+      +'</div>';
+    items.forEach(function(a) {
+      var isDone = tourDone.has(a.nr);
+      var ex = reports.find(function(r){return r.tourNr===a.nr;});
+      var statusDot = ex ? (ex.status==='abgeschlossen'?'<span style="font-size:10px;color:var(--green);font-weight:700">✓ Erledigt</span>':'<span style="font-size:10px;color:var(--orange);font-weight:700">✏ In Arbeit</span>') : '';
+      html += '<div class="auftr'+(isDone?' done':'')+'" onclick="openAuftrag('+a.nr+')">'
+        +'<div class="ap '+(a.prioritaet===1?'ap1':'ap2')+'">'+(a.prioritaet===1?'P1':'P2')+'</div>'
+        +'<div class="auftr-info">'
+        +'<div class="auftr-addr">'+xe(a.strasse)+'</div>'
+        +'<div class="auftr-meta">Nr.'+a.nr+' · '+xe(a.kunde||'')+' '+statusDot+'</div>'
+        +'</div>'
+        +'<span class="auftr-time">'+(a.uhrzeit||'')+'</span>'
+        +'<span style="color:var(--muted);font-size:14px">›</span>'
+        +'</div>';
+    });
+    html += '</div>';
+  });
+  listEl.innerHTML = html;
+}
+
+function openAuftrag(nr) {
+  var a = allAuftr.find(function(x){return x.nr===nr;});
+  if (!a) return;
+  var ex = reports.find(function(r){return r.tourNr===nr;});
+  if (ex) { cur = ex; prevView = 'tour'; showView('detail'); return; }
+  var r = mkRapport();
+  r.tourNr = nr;
+  r.auftragstyp = 'entstoerung';
+  r.sd.auftragsnr = 'Nr. '+nr;
+  r.sd.datum = a.datum;
+  r.sd.zeit = a.uhrzeit || r.sd.zeit;
+  r.sd.adresse = a.strasse+', '+(a.plz||'')+' '+(a.ort||'Bremen');
+  r.sd.kundenname = (a.kunde && a.kunde!=='—') ? a.kunde : '';
+  r.sd.zaehlernr_alt = a.zaehler || '';
+  r.sd.netzbetreiber = 'Westnetz GmbH';
+  r.sd.auftraggeber = 'Regiocom / Westnetz';
+  r._mapsUrl = a.maps_url || '';
+  if (reports.length) { var last = reports[reports.length-1]; r.sd.techniker=last.sd.techniker||''; r.sd.firma=last.sd.firma||''; }
+  var gw = a.gateway||'';
+  r.stoer.beschr = (a.fehler||'')+(gw?'\n\nGateway-Nr.: '+gw:'')+(a.zaehler?'\nZählernummer: '+a.zaehler:'');
+  var f = (a.fehler||'').toLowerCase();
+  if (f.includes('gateway')||f.includes('smgw')||f.includes('gw')) r.geraete.push('smgw');
+  if (f.includes('lmn')||f.includes('zähler')||f.includes('messwert')) r.geraete.push('imsys');
+  if (f.includes('verbindung')||f.includes('kommunikation')||f.includes('offline')) r.geraete.push('komm');
+  if (!r.geraete.length) r.geraete = ['smgw','komm'];
+  r.messwerte = JSON.parse(JSON.stringify(STD_MV.entstoerung||[]));
+  r._prefilled = true;
+  cur = r; prevView = 'tour'; showView('form');
+}
+
+function markTourDone(nr) {
+  if (!nr) return;
+  tourDone.add(nr);
+  localStorage.setItem('rapport_tdone', JSON.stringify(Array.from(tourDone)));
+}
+
+// ============================================================
+// FORM HELPERS
+// ============================================================
+function mkSec(id, ico, title, body) {
+  return '<div class="fsec" id="s-'+id+'">'
+    +'<div class="fhdr" onclick="toggleSec(\''+id+'\')">'
+    +'<span class="fhdr-ico">'+ico+'</span>'
+    +'<span class="fhdr-title">'+title+'</span>'
+    +'<span class="chev">▼</span></div>'
+    +'<div class="fbody">'+body+'</div></div>';
+}
+function mkR1(lbl, inp) { return '<div class="fg"><div class="fl">'+lbl+'</div>'+inp+'</div>'; }
+function mkR2(l1,i1,l2,i2) {
+  return '<div class="frow">'
+    +'<div class="fg"><div class="fl">'+l1+'</div>'+i1+'</div>'
+    +'<div class="fg"><div class="fl">'+l2+'</div>'+i2+'</div>'
+    +'</div>';
+}
+function toggleSec(id) { var el=document.getElementById('s-'+id); if(el) el.classList.toggle('col'); }
+function updSub() { var h=document.getElementById('hSub'); if(h) h.textContent=cur.sd.adresse||'Adresse eingeben'; }
+function setTyp(typ) {
+  cur.auftragstyp = typ;
+  cur.messwerte = JSON.parse(JSON.stringify(STD_MV[typ]||[]));
+  renderForm();
+  var t = AUFTRAGSTYPEN.find(function(x){return x.id===typ;});
+  if (t) document.getElementById('hTitle').textContent = t.name;
+}
+function onNB(v) {
+  cur.sd.netzbetreiber = v;
+  if (v) { cur.sd.auftraggeber=v; var i=document.getElementById('inp-ag'); if(i) i.value=v; }
+}
+function openMaps() { var inp=document.getElementById('addrInp'); window.open('https://maps.google.com/maps?q='+encodeURIComponent(inp?inp.value:''),'_blank'); }
+
+// ============================================================
+// RENDER FORM
+// ============================================================
+function renderForm() {
+  var r = cur;
+  var el = document.getElementById('vform');
+  if (!r.messwerte||!r.messwerte.length) r.messwerte = JSON.parse(JSON.stringify(STD_MV[r.auftragstyp]||[]));
+
+  var typBtns = AUFTRAGSTYPEN.map(function(t) {
+    return '<div class="typbtn'+(r.auftragstyp===t.id?' sel':'')+'" onclick="setTyp(\''+t.id+'\')">'
+      +'<div class="ti">'+t.icon+'</div><div class="tn">'+t.name+'</div></div>';
+  }).join('');
+
+  var _xcustom = loadCustomData();
+  var _allnb = NETZBETREIBER.concat(_xcustom.netzbetreiber || []);
+  var nbOpts = _allnb.map(function(n,i) {
+    var v = i===0?'':n;
+    return '<option value="'+xe(v)+'"'+(r.sd.netzbetreiber===v?' selected':'')+'>'+xe(n)+'</option>';
+  }).join('');
+
+  var stOpts = '<option value="offen"'+(r.status==='offen'?' selected':'')+'>Offen</option>'
+    +'<option value="abgeschlossen"'+(r.status==='abgeschlossen'?' selected':'')+'>Abgeschlossen</option>';
+
+  var mapsBtn = r._mapsUrl
+    ? '<a href="'+xe(r._mapsUrl)+'" target="_blank" class="gps-btn" style="margin-top:7px">📍 In Google Maps öffnen</a>'
+    : '<button class="gps-btn" style="margin-top:7px" onclick="openMaps()">🗺️ Google Maps öffnen</button>';
+
+  // Tätigkeit-Vorschläge dropdown
+  var taetOpts = TAETIGKEIT_VORSCHLAEGE.map(function(v,i) {
+    return '<option value="'+xe(v)+'"'+(i===0?' disabled selected':'')+'>'+xe(v)+'</option>';
+  }).join('');
+
+  // Fehlerbilder dropdown
+  var fbOpts = FEHLERBILDER.map(function(v,i) {
+    return '<option value="'+xe(v)+'"'+(i===0?' disabled selected':'')+'>'+xe(v)+'</option>';
+  }).join('');
+
+  var pfBanner = r._prefilled
+    ? '<div class="pfbanner"><span style="font-size:20px">⚡</span><span>Daten aus Tourplan vorausgefüllt · Nr.'+r.tourNr+'<br>Bitte Tätigkeit &amp; Maßnahmen ergänzen</span></div>'
+    : '';
+
+  var taetSection = mkSec('tae', '✏️', 'Durchgeführte Tätigkeit',
+    mkR1('Schnellauswahl (optional)',
+      '<select class="fi" onchange="applyTaetigkeit(this.value)"><option value="" disabled selected>— Vorlage auswählen —</option>'
+      + TAETIGKEIT_VORSCHLAEGE.slice(1).map(function(v){return '<option value="'+xe(v)+'">'+xe(v)+'</option>';}).join('')
+      +'</select>')
+    + mkR1('Tätigkeit <span class="fl-r">*</span>',
+      '<textarea id="taetigkeitInput" class="fi" style="min-height:100px" placeholder="Beschreibe die durchgeführten Arbeiten…" oninput="cur.taetigkeitText=this.value">'
+      +xe(r.taetigkeitText||'')+'</textarea>')
+  );
+
+  var stoerSection = mkSec('st', '⚠️', 'Störungsbild',
+    mkR1('Fehlerbild',
+      '<select class="fi" onchange="applyFehlerbild(this.value)"><option value="" disabled selected>— Fehlerbild auswählen —</option>'
+      + FEHLERBILDER.slice(1).map(function(v){return '<option value="'+xe(v)+'">'+xe(v)+'</option>';}).join('')
+      +'</select>')
+    + mkR1('Fehlerbeschreibung',
+      '<textarea id="fehlerbeschInput" class="fi" placeholder="Detaillierte Beschreibung des Störungsbildes…" oninput="cur.stoer.beschr=this.value">'+xe(r.stoer.beschr)+'</textarea>')
+    + mkR2('Fehlercode','<input type="text" class="fi" value="'+xe(r.stoer.code)+'" placeholder="z.B. ERR-0x04" oninput="cur.stoer.code=this.value">',
+           'Störung seit','<input type="text" class="fi" value="'+xe(r.stoer.seit)+'" placeholder="Datum/Uhrzeit" oninput="cur.stoer.seit=this.value">')
+  );
+
+  el.innerHTML = pfBanner
+    + mkSec('typ','📋','Auftragstyp','<div class="typgrid">'+typBtns+'</div>')
+    + mkSec('sd','🏠','Stammdaten',
+        mkR2('Datum <span class="fl-r">*</span>',
+             '<input type="date" class="fi" value="'+xe(r.sd.datum)+'" onchange="cur.sd.datum=this.value">',
+             'Uhrzeit',
+             '<input type="time" class="fi" value="'+xe(r.sd.zeit)+'" onchange="cur.sd.zeit=this.value">')
+        + mkR1('Netzbetreiber','<div class="select-wrap"><select class="fi" onchange="onNB(this.value)">'+nbOpts+'</select></div>')
+        + mkR1('Auftraggeber','<input id="inp-ag" type="text" class="fi" value="'+xe(r.sd.auftraggeber)+'" placeholder="Auftraggeber" oninput="cur.sd.auftraggeber=this.value">')
+        + mkR1('Einsatzadresse <span class="fl-r">*</span>',
+            '<input id="addrInp" type="text" class="fi" value="'+xe(r.sd.adresse)+'" placeholder="Straße, Hausnr., PLZ Ort" oninput="cur.sd.adresse=this.value;updSub()">'
+            +'<div style="margin-top:7px">'+mapsBtn+'</div>')
+        + mkR2('Kundenname','<input type="text" class="fi" value="'+xe(r.sd.kundenname)+'" placeholder="Vor- und Nachname" oninput="cur.sd.kundenname=this.value">',
+               'Kundennummer','<input type="text" class="fi" value="'+xe(r.sd.kundennr)+'" placeholder="Kd.-Nr." oninput="cur.sd.kundennr=this.value">')
+        + mkR2('Auftragsnummer','<input type="text" class="fi" value="'+xe(r.sd.auftragsnr)+'" placeholder="Nr." oninput="cur.sd.auftragsnr=this.value">',
+               'Status','<div class="select-wrap"><select class="fi" onchange="cur.status=this.value">'+stOpts+'</select></div>')
+        + mkR2('Techniker <span class="fl-r">*</span>','<input type="text" class="fi" value="'+xe(r.sd.techniker)+'" placeholder="Name Techniker" oninput="cur.sd.techniker=this.value">',
+               'Firma','<input type="text" class="fi" value="'+xe(r.sd.firma)+'" placeholder="Firmenname" oninput="cur.sd.firma=this.value">')
+        + mkR2('Zählernummer'+(r.auftragstyp==='zaehlertausch'?' (Alt)':''),
+               '<input type="text" class="fi" value="'+xe(r.sd.zaehlernr_alt)+'" placeholder="Seriennummer" oninput="cur.sd.zaehlernr_alt=this.value">',
+               r.auftragstyp==='zaehlertausch'?'Zählernummer (Neu)':'MeLo-ID',
+               r.auftragstyp==='zaehlertausch'
+                 ?'<input type="text" class="fi" value="'+xe(r.sd.zaehlernr_neu)+'" placeholder="Seriennummer Neu" oninput="cur.sd.zaehlernr_neu=this.value">'
+                 :'<input type="text" class="fi" value="'+xe(r.sd.melo)+'" placeholder="DE…" oninput="cur.sd.melo=this.value">')
+      )
+    + stoerSection
+    + taetSection
+    + buildMassSection(r)
+    + mkSec('mv','📊','Messwerte',
+        '<p style="font-size:12px;color:var(--muted);margin-bottom:10px">— / ✓ i.O. / ✗ n.i.O.</p>'
+        +'<div class="mv-hdr"><span>Parameter</span><span>Wert</span><span>Einh.</span><span>OK?</span></div>'
+        +'<div id="mv-list">'+buildMV()+'</div>'
+        +'<button class="btn btn-s btn-w" style="margin-top:10px;font-size:13px;padding:10px" onclick="addMV()">+ Messgröße hinzufügen</button>')
+    + mkSec('fo','📷','Fotos ('+r.fotos.length+')','<div class="pgrid" id="pgrid">'+buildPhotos()+'</div>')
+    + mkSec('sig','✍️','Unterschrift',
+        '<p style="font-size:13px;color:var(--muted);margin-bottom:10px">'+xe(r.sd.techniker||'Techniker')+' · '+r.sd.datum+'</p>'
+        +'<canvas id="sigC" class="sig-canvas'+(r.sig?' has-sig':'')+'"></canvas>'
+        +'<div class="sig-acts">'
+        +'<button class="btn btn-s" onclick="clearSig()">Löschen</button>'
+        +'<button class="btn btn-p" style="flex:1" onclick="saveSig()">✓ Übernehmen</button>'
+        +'</div>'
+        +(r.sig?'<div style="margin-top:10px"><img src="'+r.sig+'" style="max-height:80px;border:1.5px solid var(--border);border-radius:8px;padding:4px;background:#fff"></div>':''))
+    + '<div class="abar"><button class="btn btn-s" onclick="goBack()">Abbrechen</button>'
+    + '<button class="btn btn-p" style="flex:1" onclick="saveRapport()">💾 Rapport speichern</button></div>';
+
+  initSig();
+}
+
+function applyTaetigkeit(v) {
+  if (!v || v === TAETIGKEIT_VORSCHLAEGE[0]) return;
+  var ta = document.getElementById('taetigkeitInput');
+  if (ta) {
+    var existing = ta.value.trim();
+    ta.value = existing ? existing+'\n'+v : v;
+    cur.taetigkeitText = ta.value;
+  }
+}
+
+function applyFehlerbild(v) {
+  if (!v || v === FEHLERBILDER[0]) return;
+  var ta = document.getElementById('fehlerbeschInput');
+  if (ta) {
+    var existing = ta.value.trim();
+    ta.value = existing ? existing+'\n'+v : v;
+    cur.stoer.beschr = ta.value;
+  }
+}
+
+function buildMassSection(r) {
+  var typ = r.auftragstyp;
+  if (typ === 'entstoerung') {
+    var gbts = GERAETE.map(function(g) {
+      return '<div class="gbtn'+(r.geraete.indexOf(g.id)!==-1?' sel':'')+'" onclick="togGer(\''+g.id+'\',this)">'
+        +'<div class="gi">'+g.icon+'</div><div class="gn">'+g.name+'</div></div>';
+    }).join('');
+    return mkSec('ger','🔧','Betroffene Geräte','<div class="ggrid">'+gbts+'</div>')
+      + mkSec('ma','✅','Maßnahmen',buildMassHTML(r));
+  }
+  var maps = {
+    zaehlertausch:[{k:'zt_vorbereitung',l:'Vorbereitung'},{k:'zt_ausbau',l:'Ausbau Altzähler'},{k:'zt_einbau',l:'Einbau Neuzähler'},{k:'zt_smgw',l:'iMSys / SMGW'},{k:'zt_abschluss',l:'Abschluss'}],
+    sperrung:[{k:'sperr_vorbereitung',l:'Vorbereitung'},{k:'sperr_durchfuehrung',l:'Sperrung'},{k:'sperr_doku',l:'Dokumentation'}],
+    entsperrung:[{k:'entsperr',l:'Entsperrung'}]
+  };
+  var secMap = maps[typ]||[];
+  secMap.forEach(function(s){ if(!r.massn[s.k]) r.massn[s.k]=MASS[s.k].map(function(t){return{t:t,ok:false};}); });
+  var body = secMap.map(function(s) {
+    return '<div class="mg-title">'+s.l+'</div>'
+      +r.massn[s.k].map(function(m,i){
+        return '<div class="mi" onclick="togM(\''+s.k+'\','+i+')">'
+          +'<div class="mchk'+(m.ok?' chkd':'')+'" id="mc-'+s.k+'-'+i+'">'+(m.ok?'✓':'')+'</div>'
+          +'<span class="mt">'+xe(m.t)+'</span></div>';
+      }).join('');
+  }).join('');
+  return mkSec('ma','✅','Checkliste',body);
+}
+
+function buildMassHTML(r) {
+  if (!r.geraete||!r.geraete.length) return '<p id="ma-body" style="color:var(--muted);font-size:14px">Bitte Geräte auswählen.</p>';
+  return '<div id="ma-body">'+r.geraete.map(function(gId) {
+    var g = GERAETE.find(function(x){return x.id===gId;}); if(!g) return '';
+    if(!r.massn[gId]) r.massn[gId]=MASS[gId].map(function(t){return{t:t,ok:false};});
+    return '<div class="mg-title">'+g.icon+' '+g.name+'</div>'
+      +r.massn[gId].map(function(m,i){
+        return '<div class="mi" onclick="togM(\''+gId+'\','+i+')">'
+          +'<div class="mchk'+(m.ok?' chkd':'')+'" id="mc-'+gId+'-'+i+'">'+(m.ok?'✓':'')+'</div>'
+          +'<span class="mt">'+xe(m.t)+'</span></div>';
+      }).join('');
+  }).join('')+'</div>';
+}
+
+function togGer(gId, btn) {
+  var idx = cur.geraete.indexOf(gId);
+  if (idx===-1) cur.geraete.push(gId); else cur.geraete.splice(idx,1);
+  btn.classList.toggle('sel');
+  var sec = document.querySelector('#s-ma .fbody');
+  if (sec) sec.innerHTML = buildMassHTML(cur);
+}
+
+function togM(k, i) {
+  if (!cur.massn[k]) return;
+  var m = cur.massn[k][i]; m.ok = !m.ok;
+  var el = document.getElementById('mc-'+k+'-'+i);
+  if (el) { el.className='mchk'+(m.ok?' chkd':''); el.textContent=m.ok?'✓':''; }
+}
+
+function buildMV() {
+  return (cur.messwerte||[]).map(function(m,i) {
+    return '<div class="mv-row">'
+      +'<span style="font-size:12px;font-weight:500;line-height:1.3">'+xe(m.p)+'</span>'
+      +'<input type="text" inputmode="decimal" class="fi" value="'+xe(m.w)+'" placeholder="—" oninput="cur.messwerte['+i+'].w=this.value">'
+      +'<span class="mv-unit">'+xe(m.e)+'</span>'
+      +'<button class="ok-btn'+(m.ok===true?' ok':m.ok===false?' nok':'')+'" onclick="cycleOk('+i+')">'+(m.ok===true?'✓':m.ok===false?'✗':'—')+'</button>'
+      +'</div>';
+  }).join('');
+}
+function cycleOk(i) { var m=cur.messwerte[i]; m.ok=m.ok===null?true:m.ok===true?false:null; var l=document.getElementById('mv-list'); if(l) l.innerHTML=buildMV(); }
+function addMV() { var p=window.prompt('Messgröße:'); if(!p) return; var e=window.prompt('Einheit:')||''; cur.messwerte.push({p:p,w:'',e:e,ok:null}); var l=document.getElementById('mv-list'); if(l) l.innerHTML=buildMV(); }
+
+function buildPhotos() {
+  return (cur.fotos||[]).map(function(f,i){
+    return '<div class="pthumb"><img src="'+f+'" loading="lazy"><button class="pdel" onclick="delPhoto('+i+')">×</button></div>';
+  }).join('')
+  +'<div class="padd" onclick="document.getElementById(\'photoKam\').click()">📷<span>Kamera</span></div>'
+  +'<div class="padd" onclick="document.getElementById(\'photoIn\').click()">🖼️<span>Mediathek</span></div>';
+}
+function handlePhotos(ev) {
+  Array.from(ev.target.files).forEach(function(file) {
+    var rd=new FileReader();
+    rd.onload=function(e){ var img=new Image(); img.onload=function(){
+      var c=document.createElement('canvas'), sc=Math.min(1,960/Math.max(img.width,img.height));
+      c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      cur.fotos.push(c.toDataURL('image/jpeg',.75)); updPhotos();
+    }; img.src=e.target.result; }; rd.readAsDataURL(file);
+  }); ev.target.value='';
+}
+function updPhotos() {
+  var g=document.getElementById('pgrid'); if(g) g.innerHTML=buildPhotos();
+  var t=document.querySelector('#s-fo .fhdr-title'); if(t) t.textContent='Fotos ('+cur.fotos.length+')';
+}
+function delPhoto(i) { cur.fotos.splice(i,1); updPhotos(); toast('Foto gelöscht.'); }
+
+// SIGNATURE
+function initSig() {
+  sigC = document.getElementById('sigC'); if(!sigC) return;
+  sigX = sigC.getContext('2d');
+  var rect = sigC.getBoundingClientRect(), dpr = window.devicePixelRatio||1;
+  sigC.width=Math.round(rect.width*dpr); sigC.height=Math.round(rect.height*dpr);
+  sigX.scale(dpr,dpr); sigX.strokeStyle='#1E293B'; sigX.lineWidth=2.4; sigX.lineCap='round'; sigX.lineJoin='round';
+  sigDraw=false; sigHas=false;
+  function gPos(e){ var r=sigC.getBoundingClientRect(), t=e.touches?e.touches[0]:e; return{x:t.clientX-r.left,y:t.clientY-r.top}; }
+  sigC.addEventListener('touchstart',function(e){ e.preventDefault(); sigDraw=true; sigHas=true; var p=gPos(e); sigX.beginPath(); sigX.moveTo(p.x,p.y); },{passive:false});
+  sigC.addEventListener('touchmove',function(e){ e.preventDefault(); if(!sigDraw) return; var p=gPos(e); sigX.lineTo(p.x,p.y); sigX.stroke(); },{passive:false});
+  sigC.addEventListener('touchend',function(){ sigDraw=false; });
+  sigC.addEventListener('mousedown',function(e){ sigDraw=true; sigHas=true; var p=gPos(e); sigX.beginPath(); sigX.moveTo(p.x,p.y); });
+  sigC.addEventListener('mousemove',function(e){ if(!sigDraw) return; var p=gPos(e); sigX.lineTo(p.x,p.y); sigX.stroke(); });
+  sigC.addEventListener('mouseup',function(){ sigDraw=false; });
+  sigC.addEventListener('mouseleave',function(){ sigDraw=false; });
+}
+function clearSig() { if(!sigC) return; sigX.clearRect(0,0,sigC.width,sigC.height); sigHas=false; sigC.classList.remove('has-sig'); cur.sig=''; }
+function saveSig() { if(!sigHas){ toast('⚠️ Bitte unterschreiben!'); return; } cur.sig=sigC.toDataURL('image/png'); sigC.classList.add('has-sig'); toast('✓ Unterschrift gespeichert'); }
+
+function saveRapport() {
+  if (!cur.sd.adresse) { toast('⚠️ Bitte Adresse eingeben!'); var s=document.getElementById('s-sd'); if(s) s.classList.remove('col'); return; }
+  if (!cur.sd.techniker) { toast('⚠️ Bitte Techniker eintragen!'); return; }
+  var idx = reports.findIndex(function(x){return x.id===cur.id;});
+  if (idx>=0) reports[idx]=cur; else reports.push(cur);
+  persist();
+  if (cur.status==='abgeschlossen' && cur.tourNr) markTourDone(cur.tourNr);
+  toast('✅ Rapport gespeichert!');
+  setTimeout(function(){ showView('detail'); }, 600);
+}
+
+// ============================================================
+// DETAIL
+// ============================================================
+function renderDetail() {
+  var r = cur, el = document.getElementById('vdetail');
+  var t = AUFTRAGSTYPEN.find(function(x){return x.id===r.auftragstyp;}) || {name:'Rapport',icon:'📋',col:'#1E293B'};
+  var bc = r.status==='offen'?'b-open':'b-done', bl = r.status==='offen'?'Offen':'Abgeschlossen';
+  var massH = '';
+  Object.keys(r.massn).forEach(function(key) {
+    var done=r.massn[key].filter(function(m){return m.ok;}); if(!done.length) return;
+    var g=GERAETE.find(function(x){return x.id===key;});
+    var label=g?(g.icon+' '+g.name):key.replace(/_/g,' ');
+    massH+='<div class="mg-title">'+label+'</div>'+done.map(function(m){return'<div class="mi"><div class="mchk chkd">✓</div><span class="mt">'+xe(m.t)+'</span></div>';}).join('');
+  });
+  if (!massH) massH = '<p style="color:var(--muted);font-size:14px">Keine Maßnahmen abgehakt.</p>';
+  var mvRows=(r.messwerte||[]).filter(function(m){return m.w!=='';}).map(function(m){
+    var col=m.ok===true?'var(--green)':m.ok===false?'var(--red)':'inherit';
+    return'<div class="drow"><span class="dkey">'+xe(m.p)+'</span><span class="dval" style="color:'+col+'">'+xe(m.w)+' '+xe(m.e)+(m.ok===true?' ✓':m.ok===false?' ✗':'')+'</span></div>';
+  }).join('')||'<p style="color:var(--muted);font-size:14px">Keine Messwerte.</p>';
+  var photoH=r.fotos.length?'<div class="pgrid">'+r.fotos.map(function(f,i){return'<div class="pthumb"><img src="'+f+'" alt="Foto '+(i+1)+'" loading="lazy"></div>';}).join('')+'</div>':'<p style="color:var(--muted);font-size:14px">Keine Fotos.</p>';
+  function dr(k,v) { return'<div class="drow"><span class="dkey">'+k+'</span><span class="dval">'+xe(String(v||'—'))+'</span></div>'; }
+
+  el.innerHTML = '<div class="ph">'
+    +'<div class="ph-top">'
+    +'<div class="ph-logo">⚡</div>'
+    +'<div class="ph-text">'
+    +'<h2>Monteur Rapport · '+xe(t.name)+'</h2>'
+    +'<p>© 2025 Lorenzo Randazzo · Emir. Entwicklung · Lorand Technikservice GmbH</p>'
+    +'</div></div>'
+    +'<div class="ph-grid">'
+    +'<div class="ph-item"><strong>Adresse</strong>'+xe(r.sd.adresse||'—')+'</div>'
+    +'<div class="ph-item"><strong>Datum / Uhrzeit</strong>'+r.sd.datum+' '+r.sd.zeit+'</div>'
+    +'<div class="ph-item"><strong>Status / Nr.</strong>'+(r.status==='offen'?'Offen':'Abgeschlossen')+(r.tourNr?' · Nr.'+r.tourNr:'')+'</div>'
+    +'<div class="ph-item"><strong>Techniker</strong>'+xe(r.sd.techniker||'—')+'</div>'
+    +'<div class="ph-item"><strong>Auftraggeber</strong>'+xe(r.sd.auftraggeber||'—')+'</div>'
+    +'<div class="ph-item"><strong>Netzbetreiber</strong>'+xe(r.sd.netzbetreiber||'—')+'</div>'
+    +'</div></div>'
+    +'<div style="padding:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">'
+    +'<div style="display:flex;align-items:center;gap:11px">'
+    +'<div style="width:46px;height:46px;border-radius:12px;background:'+t.col+';display:flex;align-items:center;justify-content:center;font-size:22px">'+t.icon+'</div>'
+    +'<div><div style="font-size:18px;font-weight:800">'+xe(r.sd.adresse||'Kein Ort')+'</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-top:2px">'+xe(t.name)+' · '+r.sd.datum+(r.tourNr?' · Nr.'+r.tourNr:'')+'</div></div>'
+    +'</div><span class="badge '+bc+'">'+bl+'</span></div>'
+    +'<div class="dsec"><div class="dsec-hdr">🏠 Stammdaten</div><div class="dbody">'
+    +dr('Auftragstyp',t.icon+' '+t.name)+dr('Datum / Uhrzeit',r.sd.datum+' · '+r.sd.zeit)
+    +dr('Auftraggeber',r.sd.auftraggeber)+dr('Netzbetreiber',r.sd.netzbetreiber)
+    +dr('Techniker',r.sd.techniker)+dr('Firma',r.sd.firma)
+    +dr('Kundenname',r.sd.kundenname)+dr('Kundennummer',r.sd.kundennr)
+    +dr('Auftragsnummer',r.sd.auftragsnr)
+    +(r.auftragstyp==='zaehlertausch'
+      ?dr('Zähler Alt → Neu',(r.sd.zaehlernr_alt||'—')+' → '+(r.sd.zaehlernr_neu||'—'))
+      :dr('Zählernummer',r.sd.zaehlernr_alt)+(r.sd.melo?dr('MeLo-ID',r.sd.melo):''))
+    +(r.stoer.art?dr('Störungsart',r.stoer.art):'')
+    +(r.stoer.code?dr('Fehlercode',r.stoer.code):'')
+    +(r._mapsUrl?'<div class="drow"><span class="dkey">Navigation</span><span class="dval"><a href="'+xe(r._mapsUrl)+'" target="_blank" style="color:var(--accent);font-weight:600">📍 Google Maps</a></span></div>':'')
+    +'</div></div>'
+    +(r.stoer.beschr?'<div class="dsec"><div class="dsec-hdr">⚠️ Störungsbeschreibung</div><div class="dbody"><p style="font-size:14px;line-height:1.6;white-space:pre-wrap">'+xe(r.stoer.beschr)+'</p></div></div>':'')
+    +(r.taetigkeitText?'<div class="dsec"><div class="dsec-hdr">✏️ Durchgeführte Tätigkeit</div><div class="dbody"><p style="font-size:14px;line-height:1.6;white-space:pre-wrap">'+xe(r.taetigkeitText)+'</p></div></div>':'')
+    +'<div class="dsec"><div class="dsec-hdr">✅ Maßnahmen</div><div class="dbody">'+massH+'</div></div>'
+    +'<div class="dsec"><div class="dsec-hdr">📊 Messwerte</div><div class="dbody">'+mvRows+'</div></div>'
+    +'<div class="dsec"><div class="dsec-hdr">📷 Fotos ('+r.fotos.length+')</div><div class="dbody">'+photoH+'</div></div>'
+    +'<div class="dsec"><div class="dsec-hdr">✍️ Unterschrift</div><div class="dbody">'
+    +(r.sig?'<p style="font-size:13px;color:var(--muted);margin-bottom:10px">'+xe(r.sd.techniker||'Techniker')+' · '+r.sd.datum+'</p><img src="'+r.sig+'" style="max-height:100px;border:1.5px solid var(--border);border-radius:9px;padding:6px;background:#fff">':'<p style="color:var(--muted);font-size:14px">Keine Unterschrift.</p>')
+    +'</div></div>'
+    +'<div class="copy">© 2025 Lorenzo Randazzo · Emir. Entwicklung</div>'
+    +'<div class="abar"><button class="btn btn-d" style="padding:13px 11px" onclick="delRapport()">🗑️ Löschen</button>'
+    +'<button class="btn btn-s" style="padding:13px 11px" onclick="showView(\'form\')">✏️ Bearbeiten</button>'
+    +'<button class="btn btn-p" style="flex:1" onclick="openModal(\'modalExport\')">💾 Export</button>'
+    +'</div><div style="height:80px"></div>';
+}
+
+function delRapport() {
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.7);z-index:9999;display:flex;align-items:flex-end';
+  ov.innerHTML='<div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 16px;padding-bottom:max(28px,var(--sbot));width:100%">'
+    +'<h3 style="font-size:18px;font-weight:800;text-align:center;margin-bottom:8px">Rapport löschen?</h3>'
+    +'<p style="text-align:center;color:#64748B;font-size:14px;margin-bottom:20px">Dieser Vorgang kann nicht rückgängig gemacht werden.</p>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<button id="cDel" style="padding:14px;border-radius:12px;border:none;background:#DC2626;color:#fff;font-size:15px;font-weight:700;cursor:pointer">🗑️ Ja, löschen</button>'
+    +'<button id="cCan" style="padding:14px;border-radius:12px;border:1.5px solid #E2E8F0;background:#F1F5F9;color:#0F172A;font-size:15px;font-weight:700;cursor:pointer">Abbrechen</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  document.getElementById('cCan').onclick=function(){ document.body.removeChild(ov); };
+  document.getElementById('cDel').onclick=function(){
+    document.body.removeChild(ov);
+    reports=reports.filter(function(x){return x.id!==cur.id;});
+    persist(); toast('✅ Rapport gelöscht.'); showView('home');
+  };
+}
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+function _share(blob, fname) {
+  var file=new File([blob],fname,{type:blob.type});
+  if (navigator.canShare&&navigator.canShare({files:[file]})) {
+    navigator.share({files:[file]}).catch(function(e){ if(e.name!=='AbortError') _openTab(blob,fname); });
+    return;
+  }
+  if (!isIOS()) {
+    var u=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=u; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(u);},5000); toast('✅ Gespeichert!'); return;
+  }
+  _openTab(blob,fname);
+}
+function _openTab(blob,fname) {
+  var w=window.open('','_blank'); if(!w){toast('⚠️ Pop-up blockiert');return;}
+  w.document.write('<html><body style="margin:0;background:#1E293B;display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;color:#fff"><div style="text-align:center"><div style="font-size:56px;margin-bottom:16px">📄</div><div style="font-size:18px;font-weight:700">Wird geladen…</div></div>
+<script>
+function loadCustomData(){try{return JSON.parse(localStorage.getItem('rc')||'{}');}catch(e){return {};}}
+function saveCustomData(d){localStorage.setItem('rc',JSON.stringify(d));}
+function renderSettings(){
+  var el=document.getElementById('vsettings');
+  var cd=loadCustomData();
+  var rows=function(arr,type){
+    if(!arr||!arr.length)return '<p style="font-size:13px;color:#64748B;padding:8px 0">Noch keine Eintraege.</p>';
+    return arr.map(function(v,i){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E8F0">'
+        +'<span style="flex:1;font-size:14px">'+v+'</span>'
+        +'<button onclick="delCust(''+type+'','+i+')" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#DC2626;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">x</button>'
+        +'</div>';
+    }).join('');
+  };
+  var s='<div class="hero"><h2>&#9881; Einstellungen</h2><p>Profil und eigene Eintraege</p></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128100; Mein Profil</div>';
+  s+='<div style="padding:14px">';
+  s+='<div class="fg"><div class="fl">Techniker-Name</div><input type="text" class="fi" id="s-tech" value="'+(cd.lastTechniker||'')+'" placeholder="Lorenzo Randazzo" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Firma</div><input type="text" class="fi" id="s-firma" value="'+(cd.lastFirma||'')+'" placeholder="Lorand Technikservice" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Std-Netzbetreiber</div><input type="text" class="fi" id="s-nb" value="'+(cd.lastNB||'')+'" placeholder="Westnetz GmbH" oninput="savePrf()"></div>';
+  s+='<div style="background:#D1FAE5;border-radius:8px;padding:8px;font-size:12px;color:#065F46">Automatisch in neue Rapporte eingetragen.</div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128119; Techniker-Namen</div>';
+  s+='<div style="padding:14px">'+rows(cd.techniker,'techniker');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-tech" placeholder="Name..." style="flex:1"><button onclick="addCust('techniker','i-tech')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127970; Firmennamen</div>';
+  s+='<div style="padding:14px">'+rows(cd.firmen,'firmen');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-firma" placeholder="Firma..." style="flex:1"><button onclick="addCust('firmen','i-firma')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127981; Eigene Netzbetreiber</div>';
+  s+='<div style="padding:14px">'+rows(cd.netzbetreiber,'netzbetreiber');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-nb" placeholder="Netzbetreiber..." style="flex:1"><button onclick="addCust('netzbetreiber','i-nb')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128190; Daten</div>';
+  s+='<div style="padding:14px;display:flex;flex-direction:column;gap:10px">';
+  s+='<button class="btn btn-s btn-w" onclick="exportAll()">Exportieren (JSON)</button>';
+  s+='<button class="btn btn-s btn-w" onclick="document.getElementById('jsonIn').click()">Importieren (JSON)</button>';
+  s+='<button class="btn btn-d btn-w" onclick="if(confirm('Alle Rapporte loeschen?')){{reports=[];persist();toast('Geloescht');showView('home');}}">Alle loeschen</button>';
+  s+='</div></div>';
+  s+='<div style="height:40px"></div>';
+  el.innerHTML=s;
+}
+function savePrf(){
+  var cd=loadCustomData();
+  var t=document.getElementById('s-tech'),f=document.getElementById('s-firma'),n=document.getElementById('s-nb');
+  if(t)cd.lastTechniker=t.value;if(f)cd.lastFirma=f.value;if(n)cd.lastNB=n.value;
+  saveCustomData(cd);
+}
+function addCust(type,inpId){
+  var inp=document.getElementById(inpId);
+  if(!inp||!inp.value.trim()){toast('Bitte etwas eingeben');return;}
+  var val=inp.value.trim();
+  var cd=loadCustomData();
+  if(!cd[type])cd[type]=[];
+  if(cd[type].indexOf(val)!==-1){toast('Bereits vorhanden');return;}
+  cd[type].push(val);saveCustomData(cd);inp.value='';
+  toast(val+' gespeichert');renderSettings();
+}
+function delCust(type,idx){
+  var cd=loadCustomData();
+  if(cd[type])cd[type].splice(idx,1);
+  saveCustomData(cd);toast('Geloescht');renderSettings();
+}
+</script>
+</body></html>');
+  var rd=new FileReader(); rd.onload=function(e){w.location.href=e.target.result; toast('Geöffnet → Teilen → In Dateien');};
+  rd.readAsDataURL(blob);
+}
+function doJSON() { _share(new Blob([JSON.stringify(cur,null,2)],{type:'application/json'}),'Rapport_'+cur.auftragstyp+'_'+cur.sd.datum+'.json'); }
+function exportAll() { _share(new Blob([JSON.stringify(reports,null,2)],{type:'application/json'}),'Alle_Rapporte_'+new Date().toISOString().slice(0,10)+'.json'); }
+function importJSON(event) {
+  var file=event.target.files[0]; if(!file) return;
+  var rd=new FileReader();
+  rd.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result),items=Array.isArray(data)?data:[data],added=0,updated=0;
+      items.forEach(function(d){ if(!d.id||!d.sd) return; var idx=reports.findIndex(function(x){return x.id===d.id;}); if(idx>=0){reports[idx]=d;updated++;}else{reports.push(d);added++;} });
+      persist(); toast('✅ '+added+' neu, '+updated+' aktualisiert'); renderHome();
+    }catch(err){toast('❌ Fehler: '+err.message);}
+  };
+  rd.readAsText(file); event.target.value='';
+}
+
+function doXLS() {
+  var r=cur, t=AUFTRAGSTYPEN.find(function(x){return x.id===r.auftragstyp;})||{name:'Rapport'};
+  function x2(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function cell(v,sty){return'<Cell'+(sty?' ss:StyleID="'+sty+'"':'')+"><Data ss:Type=\"String\">"+x2(String(v||''))+"</Data></Cell>";}
+  function hr(s){return'<Row><Cell ss:StyleID="title" ss:MergeAcross="3"><Data ss:Type="String">'+x2(s)+'</Data></Cell></Row>';}
+  function dr2(k,v1,k2,v2){if(k2!==undefined)return'<Row>'+cell(k,'bg')+cell(v1)+cell(k2,'bg')+cell(v2)+'</Row>';return'<Row>'+cell(k,'bg')+'<Cell ss:MergeAcross="2"><Data ss:Type="String">'+x2(String(v1||'—'))+'</Data></Cell></Row>';}
+  var rows=[];
+  rows.push('<Row><Cell ss:StyleID="main" ss:MergeAcross="3"><Data ss:Type="String">MONTEUR RAPPORT – '+x2(t.name)+'</Data></Cell></Row>');
+  rows.push('<Row><Cell ss:StyleID="sub" ss:MergeAcross="3"><Data ss:Type="String">© 2025 Lorenzo Randazzo · Emir. Entwicklung · Lorand Technikservice</Data></Cell></Row>');
+  rows.push('<Row/>');
+  rows.push(hr('STAMMDATEN'));
+  rows.push(dr2('Datum',r.sd.datum,'Uhrzeit',r.sd.zeit));
+  rows.push(dr2('Auftragstyp',t.name,'Status',r.status==='offen'?'Offen':'Abgeschlossen'));
+  rows.push(dr2('Auftraggeber',r.sd.auftraggeber,'Netzbetreiber',r.sd.netzbetreiber));
+  rows.push(dr2('Techniker',r.sd.techniker,'Firma',r.sd.firma));
+  rows.push(dr2('Adresse',r.sd.adresse));
+  rows.push(dr2('Kundenname',r.sd.kundenname,'Kundennummer',r.sd.kundennr));
+  rows.push(dr2('Auftragsnummer',r.sd.auftragsnr,'Tour Nr.',r.tourNr||''));
+  rows.push(r.auftragstyp==='zaehlertausch'?dr2('Zähler Alt',r.sd.zaehlernr_alt,'Zähler Neu',r.sd.zaehlernr_neu):dr2('Zählernummer',r.sd.zaehlernr_alt,'MeLo-ID',r.sd.melo));
+  rows.push('<Row/>');
+  if(r.stoer.beschr||r.stoer.art){rows.push(hr('STÖRUNGSBILD'));rows.push(dr2('Störungsart',r.stoer.art,'Fehlercode',r.stoer.code));if(r.stoer.beschr)rows.push(dr2('Beschreibung',r.stoer.beschr));rows.push('<Row/>');}
+  if(r.taetigkeitText){rows.push(hr('DURCHGEFÜHRTE TÄTIGKEIT'));rows.push(dr2('Tätigkeit',r.taetigkeitText));rows.push('<Row/>');}
+  rows.push(hr('MASSNAHMEN'));
+  var anyM=false;
+  Object.keys(r.massn).forEach(function(key){var done=r.massn[key].filter(function(m){return m.ok;});if(!done.length)return;anyM=true;var g=GERAETE.find(function(x){return x.id===key;});rows.push('<Row><Cell ss:StyleID="grp" ss:MergeAcross="3"><Data ss:Type="String">'+x2(g?g.name:key)+'</Data></Cell></Row>');done.forEach(function(m,i){rows.push('<Row>'+cell(i+1)+cell(m.t)+'<Cell/><Cell/></Row>');});});
+  if(!anyM)rows.push(dr2('','Keine Maßnahmen abgehakt.'));
+  rows.push('<Row/>');
+  var mv=(r.messwerte||[]).filter(function(m){return m.w!=='';});
+  if(mv.length){rows.push(hr('MESSWERTE'));rows.push('<Row>'+cell('Parameter','hdr')+cell('Wert','hdr')+cell('Einheit','hdr')+cell('Bewertung','hdr')+'</Row>');mv.forEach(function(m){rows.push('<Row>'+cell(m.p)+cell(m.w)+cell(m.e)+cell(m.ok===true?'i.O.':m.ok===false?'n.i.O.':'—')+'</Row>');});rows.push('<Row/>');}
+  rows.push(hr('UNTERSCHRIFT'));rows.push(dr2('Techniker',r.sd.techniker,'Datum',r.sd.datum));rows.push(dr2('Unterschrift',r.sig?'Digital vorhanden':'Nicht vorhanden'));
+  var stls='<Styles>'
+    +'<Style ss:ID="Default"><Alignment ss:WrapText="1" ss:Vertical="Top"/><Font ss:FontName="Calibri" ss:Size="10"/></Style>'
+    +'<Style ss:ID="main"><Alignment ss:Horizontal="Center"/><Font ss:FontName="Calibri" ss:Size="14" ss:Bold="1" ss:Color="#1E293B"/><Interior ss:Color="#EEF2FF" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="sub"><Alignment ss:Horizontal="Center"/><Font ss:FontName="Calibri" ss:Size="9" ss:Color="#64748B"/></Style>'
+    +'<Style ss:ID="title"><Font ss:FontName="Calibri" ss:Size="11" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#1E293B" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="grp"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#6366F1" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="bg"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1"/><Interior ss:Color="#F1F5F9" ss:Pattern="Solid"/></Style>'
+    +'<Style ss:ID="hdr"><Font ss:FontName="Calibri" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/><Interior ss:Color="#334155" ss:Pattern="Solid"/></Style>'
+    +'</Styles>';
+  var xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?>'
+    +'<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+    +stls+'<Worksheet ss:Name="Rapport"><Table ss:DefaultColumnWidth="120">'
+    +'<Column ss:Width="160"/><Column ss:Width="200"/><Column ss:Width="160"/><Column ss:Width="200"/>'
+    +rows.join('')+'</Table></Worksheet></Workbook>';
+  var fname='Rapport_'+r.auftragstyp+'_'+r.sd.datum+'_'+(r.sd.adresse||r.id).replace(/[^a-zA-Z0-9]/g,'_').slice(0,20)+'.xls';
+  _share(new Blob([xml],{type:'application/vnd.ms-excel;charset=utf-8'}),fname);
+}
+
+// ============================================================
+// INSTALL BANNER
+// ============================================================
+setTimeout(function(){
+  var hidden=localStorage.getItem('ib');
+  var standalone=window.navigator.standalone||window.matchMedia('(display-mode: standalone)').matches;
+  if(!hidden&&!standalone){ document.getElementById('iBanner').style.display='block'; }
+},2500);
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderHome();
+if(allAuftr.length){ document.getElementById('tourDot').style.display='block'; }
+</script>
+
+<script>
+function loadCustomData(){try{return JSON.parse(localStorage.getItem('rc')||'{}');}catch(e){return {};}}
+function saveCustomData(d){localStorage.setItem('rc',JSON.stringify(d));}
+function renderSettings(){
+  var el=document.getElementById('vsettings');
+  var cd=loadCustomData();
+  var rows=function(arr,type){
+    if(!arr||!arr.length)return '<p style="font-size:13px;color:#64748B;padding:8px 0">Noch keine Eintraege.</p>';
+    return arr.map(function(v,i){
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E8F0">'
+        +'<span style="flex:1;font-size:14px">'+v+'</span>'
+        +'<button onclick="delCust(''+type+'','+i+')" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#DC2626;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">x</button>'
+        +'</div>';
+    }).join('');
+  };
+  var s='<div class="hero"><h2>&#9881; Einstellungen</h2><p>Profil und eigene Eintraege</p></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128100; Mein Profil</div>';
+  s+='<div style="padding:14px">';
+  s+='<div class="fg"><div class="fl">Techniker-Name</div><input type="text" class="fi" id="s-tech" value="'+(cd.lastTechniker||'')+'" placeholder="Lorenzo Randazzo" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Firma</div><input type="text" class="fi" id="s-firma" value="'+(cd.lastFirma||'')+'" placeholder="Lorand Technikservice" oninput="savePrf()"></div>';
+  s+='<div class="fg"><div class="fl">Std-Netzbetreiber</div><input type="text" class="fi" id="s-nb" value="'+(cd.lastNB||'')+'" placeholder="Westnetz GmbH" oninput="savePrf()"></div>';
+  s+='<div style="background:#D1FAE5;border-radius:8px;padding:8px;font-size:12px;color:#065F46">Automatisch in neue Rapporte eingetragen.</div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128119; Techniker-Namen</div>';
+  s+='<div style="padding:14px">'+rows(cd.techniker,'techniker');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-tech" placeholder="Name..." style="flex:1"><button onclick="addCust('techniker','i-tech')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127970; Firmennamen</div>';
+  s+='<div style="padding:14px">'+rows(cd.firmen,'firmen');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-firma" placeholder="Firma..." style="flex:1"><button onclick="addCust('firmen','i-firma')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#127981; Eigene Netzbetreiber</div>';
+  s+='<div style="padding:14px">'+rows(cd.netzbetreiber,'netzbetreiber');
+  s+='<div style="display:flex;gap:8px;margin-top:10px"><input type="text" class="fi" id="i-nb" placeholder="Netzbetreiber..." style="flex:1"><button onclick="addCust('netzbetreiber','i-nb')" class="btn btn-p" style="padding:10px 14px">+ Add</button></div></div></div>';
+  s+='<div style="margin:12px;background:#fff;border-radius:14px;border:1.5px solid #E2E8F0;overflow:hidden">';
+  s+='<div style="padding:12px 14px;background:linear-gradient(90deg,#1E293B,#334155);color:#fff;font-size:14px;font-weight:700">&#128190; Daten</div>';
+  s+='<div style="padding:14px;display:flex;flex-direction:column;gap:10px">';
+  s+='<button class="btn btn-s btn-w" onclick="exportAll()">Exportieren (JSON)</button>';
+  s+='<button class="btn btn-s btn-w" onclick="document.getElementById('jsonIn').click()">Importieren (JSON)</button>';
+  s+='<button class="btn btn-d btn-w" onclick="if(confirm('Alle Rapporte loeschen?')){{reports=[];persist();toast('Geloescht');showView('home');}}">Alle loeschen</button>';
+  s+='</div></div>';
+  s+='<div style="height:40px"></div>';
+  el.innerHTML=s;
+}
+function savePrf(){
+  var cd=loadCustomData();
+  var t=document.getElementById('s-tech'),f=document.getElementById('s-firma'),n=document.getElementById('s-nb');
+  if(t)cd.lastTechniker=t.value;if(f)cd.lastFirma=f.value;if(n)cd.lastNB=n.value;
+  saveCustomData(cd);
+}
+function addCust(type,inpId){
+  var inp=document.getElementById(inpId);
+  if(!inp||!inp.value.trim()){toast('Bitte etwas eingeben');return;}
+  var val=inp.value.trim();
+  var cd=loadCustomData();
+  if(!cd[type])cd[type]=[];
+  if(cd[type].indexOf(val)!==-1){toast('Bereits vorhanden');return;}
+  cd[type].push(val);saveCustomData(cd);inp.value='';
+  toast(val+' gespeichert');renderSettings();
+}
+function delCust(type,idx){
+  var cd=loadCustomData();
+  if(cd[type])cd[type].splice(idx,1);
+  saveCustomData(cd);toast('Geloescht');renderSettings();
+}
+</script>
+</body>
+</html>
