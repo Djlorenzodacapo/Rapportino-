@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Monteur Rapport Pro">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Monteur Rapport Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#07111f;--panel:#0f1f35;--panel2:#142a46;--text:#f8fafc;--muted:#9fb1c7;--gold:#f2c96d;--gold2:#ffe6a3;--line:#284461;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--radius:18px;--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{border:0;cursor:pointer}
+.app{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(8,9,12,.96);backdrop-filter:blur(16px);padding:calc(10px + var(--safe-top)) 14px 10px;border-bottom:1px solid rgba(214,178,94,.18)}
+.toprow{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center}
+.menuBtn{width:48px;height:48px;border-radius:15px;background:var(--panel2);color:#fff;font-size:26px;z-index:60}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.logo{width:42px;height:42px;border:1.5px solid var(--gold);border-radius:13px;display:grid;place-items:center;color:var(--gold2);font-weight:900;font-family:Georgia,serif;background:linear-gradient(135deg,#111,#202020)}
+.brand h1{font-size:19px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand p{display:none}
+.quickNew{position:fixed;right:14px;bottom:calc(78px + var(--safe-bottom));z-index:42;width:58px;height:58px;border-radius:20px;background:linear-gradient(135deg,var(--gold2),var(--gold));font-size:26px;font-weight:900;color:#111;box-shadow:0 12px 35px rgba(214,178,94,.28)}
+.sidebar{position:fixed;inset:0 auto 0 0;width:min(330px,88vw);z-index:100;background:#0b1728;border-right:1px solid var(--line);transform:translateX(-110%);transition:.22s ease;padding:calc(18px + var(--safe-top)) 14px 20px;box-shadow:20px 0 40px rgba(0,0,0,.35);overflow:auto}
+.sidebar.show{transform:none}.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none}.overlay.show{display:block}
+.navbtn{width:100%;padding:14px 14px;border-radius:14px;background:transparent;color:#e5e7eb;text-align:left;margin:4px 0;font-weight:800}.navbtn.active,.navbtn:hover{background:linear-gradient(135deg,rgba(214,178,94,.22),rgba(214,178,94,.08));color:var(--gold2)}
+.main{max-width:1220px;margin:auto;padding:22px 18px calc(110px + var(--safe-bottom))}
+h2{font-size:38px;margin:8px 0 22px;letter-spacing:-.04em}.view{display:none}.view.active{display:block}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.card,.item,.formBox{background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.16)}
+.statLabel{font-size:18px;color:var(--muted);font-weight:800}.statNum{font-size:46px;color:var(--gold2);font-weight:950;margin-top:12px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.btn{border-radius:14px;padding:12px 15px;background:var(--panel2);color:#fff;font-weight:900;border:1px solid var(--line)}.btn.gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111}.btn.red{background:#7f1d1d}.btn.green{background:#14532d}.btn.blue{background:#1e3a8a}.btn.small{padding:8px 10px;font-size:13px}
+.search{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);background:#0f1014;color:#fff;margin-bottom:14px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}.item input[type=checkbox]{width:24px;height:24px;accent-color:var(--gold)}.item h3{margin:0 0 7px;font-size:18px}.item p{margin:3px 0;color:var(--muted)}.pill{display:inline-flex;border-radius:999px;padding:5px 10px;background:rgba(214,178,94,.16);color:var(--gold2);font-weight:900;font-size:12px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:150;display:none;align-items:flex-end}.modal.show{display:flex}.sheet{background:#0b1728;border:1px solid var(--line);border-radius:24px 24px 0 0;width:100%;max-height:94vh;overflow:auto;padding:18px}.sheetInner{max-width:980px;margin:auto}.row{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.field{display:grid;gap:7px;margin-bottom:13px}.field label{font-size:13px;color:var(--gold2);font-weight:900}.field input,.field select,.field textarea{width:100%;padding:13px;border-radius:13px;border:1px solid var(--line);background:#090a0d;color:#fff}.field textarea{min-height:90px;resize:vertical}
+.checkgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}.check{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:9px;background:#0b0c10}.check input{width:20px;height:20px;accent-color:var(--gold);flex:0 0 auto}
+.photoGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}.photo{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#000}.photo img{width:100%;height:110px;object-fit:cover;display:block}.photo button{width:100%;border-radius:0;background:#7f1d1d;color:#fff;padding:7px}
+.toast{position:fixed;left:14px;right:14px;bottom:calc(18px + var(--safe-bottom));z-index:200;background:#0f1f35;color:#fff;border:1px solid var(--gold);border-radius:14px;padding:14px;display:none}
+@media(min-width:900px){.toprow{grid-template-columns:52px 1fr auto}.brand p{display:block;margin:2px 0 0;color:var(--muted);font-size:12px}.quickNew{position:static;width:auto;height:auto;padding:14px 18px}.toprow:after{content:"+ Neuer Rapport";grid-column:3;background:linear-gradient(135deg,var(--gold2),var(--gold));color:#111;border-radius:16px;padding:14px 18px;font-weight:950}.quickNew{display:none}}
+@media(max-width:760px){.main{padding-left:14px;padding-right:14px}h2{font-size:35px}.row,.row3{grid-template-columns:1fr}.item{grid-template-columns:auto 1fr}.item .actions{grid-column:1/3;justify-content:flex-start}.brand h1{font-size:17px}.stats{grid-template-columns:1fr}.toprow{grid-template-columns:52px minmax(0,1fr)}}
+@media(max-width:430px){.topbar{padding-left:10px;padding-right:10px}.brand h1{font-size:15px}.logo{width:38px;height:38px}.main{padding-top:18px}.card,.item,.formBox{padding:16px}.quickNew{right:10px;bottom:calc(76px + var(--safe-bottom))}}
+
+/* DOCUMENT STYLE FORM */
+.docForm{background:#f8fafc;color:#111827;border-radius:22px;padding:22px;border:1px solid #e5e7eb;box-shadow:0 18px 45px rgba(0,0,0,.28)}
+.docHead{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:3px solid #b58b34;padding-bottom:12px;margin-bottom:18px}
+.docLogo{display:flex;align-items:center;gap:12px}.docLogo .logo{background:#111;color:#f7de9a}
+.docForm h2,.docForm h3{color:#111827}.docForm h2{margin:0;font-size:28px}.docForm h3{border-bottom:1px solid #d1d5db;padding-bottom:7px;margin-top:22px;color:#8a641c}
+.docForm .field label{color:#8a641c}.docForm .field input,.docForm .field select,.docForm .field textarea{background:#fff;color:#111827;border:1px solid #cbd5e1}
+.docForm .check{background:#fff;color:#111827;border:1px solid #d1d5db;transition:.15s}
+.docForm .check:has(input:checked){border-color:#b58b34;background:#fff7dc;box-shadow:0 0 0 2px rgba(181,139,52,.16)}
+.docForm .check input{accent-color:#b58b34}
+.docForm .btn{background:#0f1f35;color:#fff}.docForm .btn.gold{background:linear-gradient(135deg,#f7de9a,#d6b25e);color:#111}.docForm .btn.green{background:#14532d}.docForm .btn.red{background:#7f1d1d}
+.selectedInfo{background:#fff7dc;border:1px solid #e4c46c;border-radius:14px;padding:12px;margin:10px 0;color:#111827}
+.faultBox{border:1px solid #d1d5db;border-radius:16px;padding:14px;background:#ffffff;margin-top:8px}
+.faultBox.empty{background:#f3f4f6;color:#6b7280}
+.docSub{font-size:12px;color:#6b7280;margin:3px 0 0}
+@media(max-width:760px){.docForm{padding:14px;border-radius:18px}.docHead{align-items:flex-start;flex-direction:column}.docForm h2{font-size:23px}}
+
+
+.articleTable{width:100%;border-collapse:collapse;background:#fff;color:#111827;border-radius:14px;overflow:hidden}
+.articleTable th,.articleTable td{border:1px solid #d1d5db;padding:8px;text-align:left;vertical-align:top}
+.articleTable th{background:#f3f4f6;color:#8a641c;font-size:12px;text-transform:uppercase}
+.articleThumb{width:70px;height:58px;object-fit:cover;border-radius:8px;border:1px solid #d1d5db;background:#f3f4f6}
+.signaturePad{width:100%;height:150px;background:#fff;border:2px dashed #b58b34;border-radius:14px;touch-action:none;display:block}
+.sigPreview{max-width:100%;height:90px;object-fit:contain;background:#fff;border:1px solid #d1d5db;border-radius:10px}
+.multiBox{background:#fff;border:1px solid #d1d5db;border-radius:16px;padding:14px;margin:10px 0}
+.pSigImg{max-width:100%;height:25mm;object-fit:contain;border-bottom:1px solid #333}
+.pArticleImg{width:22mm;height:18mm;object-fit:cover}
+
+
+.activityPanel{background:#fff;border:1px solid #d1d5db;border-radius:16px;padding:14px}
+.activitySearch{width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:12px;margin-bottom:10px;color:#111827;background:#fff}
+.activityTabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.activityTab{border:1px solid #d1d5db;background:#f9fafb;color:#111827;border-radius:999px;padding:8px 11px;font-weight:800}
+.activityTab.active{background:#0f1f35;color:#f7de9a;border-color:#b58b34}
+.activityGroups{display:grid;gap:10px}
+.activityGroup{border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff}
+.activityGroup summary{cursor:pointer;padding:12px 14px;font-weight:900;color:#8a641c;background:#f8fafc;display:flex;justify-content:space-between;gap:10px}
+.activityGroupBody{padding:12px}
+.activitySelectedBar{background:#fff7dc;border:1px solid #e4c46c;border-radius:14px;padding:12px;margin:10px 0;color:#111827}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#0f1f35;color:#f7de9a;margin:3px;font-size:12px;font-weight:900}
+.chip button{background:transparent;color:#f7de9a;padding:0;font-weight:900}
+.quickRow{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+
+
+.operatorSearchBox{position:relative}
+.operatorHint{font-size:12px;color:#6b7280;margin-top:4px}
+.validationBox{background:#fff7dc;border:1px solid #e4c46c;color:#111827;border-radius:14px;padding:12px;margin:12px 0;line-height:1.45}
+.requiredMark{color:#b91c1c;font-weight:900}
+.typeInfo{background:#eef2ff;border:1px solid #c7d2fe;color:#111827;border-radius:14px;padding:12px;margin:10px 0}
+
+
+.errorField input,.errorField select,.errorField textarea{border:2px solid #dc2626!important;background:#fff1f2!important;color:#111827!important}
+.errorMsg{color:#b91c1c;font-size:12px;font-weight:900;margin-top:4px}
+.formAlert{background:#fee2e2;border:2px solid #dc2626;color:#7f1d1d;border-radius:14px;padding:12px;margin:12px 0;font-weight:800;display:none}
+.formAlert.show{display:block}
+.lockNote{background:#e0f2fe;border:1px solid #38bdf8;color:#0f172a;border-radius:14px;padding:11px;margin:9px 0}
+.valueTable{width:100%;border-collapse:separate;border-spacing:0;background:#fff;color:#111827;border:1px solid #cbd5e1;border-radius:14px;overflow:hidden}
+.valueTable th{background:#dbeafe;color:#0f3768;text-align:left;font-size:12px;text-transform:uppercase;padding:9px;border-bottom:1px solid #bfdbfe}
+.valueTable td{padding:8px;border-bottom:1px solid #e5e7eb;vertical-align:top}
+.valueTable tr:last-child td{border-bottom:0}
+.valueTable input{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#111827}
+.hiddenSection{display:none!important}
+
+
+.helpText{font-size:12px;color:#475569;line-height:1.35;margin-top:4px}
+.infoCard{background:#eff6ff;border:1px solid #bfdbfe;color:#0f172a;border-radius:14px;padding:12px;margin:10px 0}
+.check strong{display:block}
+.check .desc{display:block;font-size:12px;color:#64748b;margin-top:2px;line-height:1.35}
+.importPreview{background:#fff;border:1px solid #cbd5e1;border-radius:16px;padding:14px;color:#111827;max-height:60vh;overflow:auto}
+.importPreview table{width:100%;border-collapse:collapse;font-size:12px}
+.importPreview th,.importPreview td{border:1px solid #cbd5e1;padding:6px;vertical-align:top}
+.importPreview th{background:#dbeafe;color:#0f3768}
+.bigTouch{min-height:48px}
+
+
+.tourDay{background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025));border:1px solid var(--line);border-radius:18px;padding:16px}
+.tourDay.ok{border-color:#166534}.tourDay.warn{border-color:#f59e0b}.tourDay.bad{border-color:#ef4444;background:linear-gradient(180deg,rgba(239,68,68,.18),rgba(255,255,255,.025))}
+.tourHead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:10px}
+.tourJobs{display:grid;gap:8px}
+.tourJob{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;background:rgba(255,255,255,.04)}
+.tourJob b{color:var(--gold2)}
+.routeLink{display:inline-flex;border-radius:999px;padding:8px 12px;background:#1d4ed8;color:#fff;text-decoration:none;font-weight:900}
+.workWarn{color:#fbbf24;font-weight:900}.workBad{color:#fecaca;font-weight:900}
+.pTourDay{page-break-inside:avoid;border:1px solid #aaa;border-radius:8px;padding:8px;margin:8px 0}
+.pTourDay.bad{border:2px solid #dc2626}.pTourDay.warn{border:2px solid #f59e0b}
+
+
+.singleMap{display:inline-flex;margin-top:6px;border-radius:999px;padding:6px 10px;background:#0f766e;color:#fff;text-decoration:none;font-size:12px;font-weight:900}
+.travelBadge{display:inline-flex;margin:4px 6px 4px 0;border-radius:999px;padding:5px 9px;background:#1e3a8a;color:#dbeafe;font-size:12px;font-weight:900}
+
+
+.mobileFileHint{background:#e0f2fe;border:1px solid #38bdf8;color:#0f172a;border-radius:14px;padding:12px;margin:10px 0;font-size:13px;line-height:1.4}
+.mobileDownloadBox{position:fixed;left:12px;right:12px;bottom:calc(14px + var(--safe-bottom));z-index:999;background:#0f1f35;border:2px solid var(--gold);border-radius:16px;padding:14px;color:#fff;display:none;box-shadow:0 14px 45px rgba(0,0,0,.45)}
+.mobileDownloadBox a{color:#ffe6a3;font-weight:900;word-break:break-all}
+.mobileDownloadBox button{margin-top:10px}
+@media(max-width:760px){
+  button,.btn,.navbtn,input,select,textarea,label{font-size:16px}
+  .btn,.navbtn{min-height:48px}
+  .menuBtn{min-width:52px;min-height:52px}
+  .topbar{padding-left:10px;padding-right:10px}
+  .toprow{grid-template-columns:56px minmax(0,1fr)}
+  .brand{max-width:calc(100vw - 86px)}
+  .brand h1{font-size:16px}
+  .quickNew{width:64px;height:64px;font-size:30px;right:14px;bottom:calc(88px + var(--safe-bottom));z-index:80}
+  .sheet{max-height:96vh;border-radius:18px 18px 0 0;padding:12px}
+  .docForm{padding:12px}
+  .toolbar{gap:8px}
+  .toolbar .btn{flex:1 1 100%;justify-content:center;text-align:center}
+  .checkgrid{grid-template-columns:1fr}
+  .activityTabs{overflow:auto;flex-wrap:nowrap;padding-bottom:6px}
+  .activityTab{white-space:nowrap}
+  .valueTable{display:block;overflow-x:auto}
+  .articleTable{display:block;overflow-x:auto}
+  .tourHead{display:block}
+  .routeLink,.singleMap{width:100%;justify-content:center;margin-top:8px}
+}
+
+
+.simpleSelectPanel{background:#eff6ff;border:1px solid #bfdbfe;color:#0f172a;border-radius:14px;padding:12px;margin:10px 0}
+.calendarItem{border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(255,255,255,.045)}
+.calendarItem h3{margin:0 0 6px;color:var(--gold2)}
+.saveState{font-size:12px;color:#86efac;font-weight:900;margin-left:8px}
+
+.printDoc{display:none}
+@media print{
+body{background:#fff;color:#111}.app,.modal,.toast,.sidebar,.overlay,.quickNew{display:none!important}.printDoc{display:block!important}
+@page{size:A4;margin:10mm}.pPage{page-break-after:always;break-after:page;min-height:267mm;font-family:Arial,sans-serif}
+.pHeader{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #b58b34;padding-bottom:8px;margin-bottom:10px}
+.pLogo{display:flex;align-items:center;gap:10px}.pLogoBox{width:44px;height:44px;border:1.5px solid #b58b34;border-radius:9px;display:grid;place-items:center;color:#8a641c;font-weight:900;font-family:Georgia,serif}
+.pHeader h1{font-size:20px;margin:0}.pHeader small{font-size:10px}.pNo{font-size:16px;font-weight:700;text-align:right}
+.pGrid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}.pBox{border:1px solid #aaa;border-radius:6px;padding:7px;margin:6px 0;break-inside:avoid;page-break-inside:avoid}.pBox h3{font-size:12px;color:#8a641c;margin:0 0 5px;text-transform:uppercase}.kv{display:grid;grid-template-columns:115px 1fr;gap:3px;font-size:11px}.kv b{font-weight:700}.pText{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.35}
+.pTable{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:auto}.pTable th,.pTable td{border:1px solid #bbb;padding:4px;text-align:left;vertical-align:top;overflow-wrap:anywhere}.pTable th{background:#f2f2f2}thead{display:table-header-group}tr{break-inside:avoid;page-break-inside:avoid}
+.pPhotos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pPhoto{break-inside:avoid;page-break-inside:avoid;border:1px solid #aaa;padding:4px}.pPhoto img{width:100%;max-height:95mm;object-fit:contain;display:block}.pFooter{font-size:9px;color:#555;border-top:1px solid #ccc;margin-top:8px;padding-top:5px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="toprow">
+    <button class="menuBtn" id="menuBtn" type="button">☰</button>
+    <div class="brand"><div class="logo">LR</div><div><h1>Monteur Rapport Pro <span id="saveState" class="saveState">gespeichert</span></h1><p>Version ALLROUND 112 · Entwicklung, Urheberrecht und Copyright Lorenzo Randazzo</p></div></div>
+  </div>
+</header>
+<button class="quickNew" title="Neuer Rapport" onclick="newReport()">+</button>
+<div class="overlay" id="overlay" onclick="toggleMenu(false)"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="brand" style="margin-bottom:16px"><div class="logo">LR</div><div><h1>Monteur Rapport Pro</h1><p>© Lorenzo Randazzo</p></div></div>
+  <button class="navbtn active" onclick="nav('dash',this)">Dashboard</button>
+  <button class="navbtn" onclick="nav('reports',this)">Rapporte</button>
+  <button class="navbtn" onclick="nav('monteurs',this)">Monteure</button>
+  <button class="navbtn" onclick="nav('companies',this)">Firmen</button>
+  <button class="navbtn" onclick="nav('operators',this)">Netzbetreiber</button>
+  <button class="navbtn" onclick="nav('catalogs',this)">Tätigkeiten & Störungsbilder</button>
+  <button class="navbtn" onclick="nav('tour',this)">Tourenplanung</button>
+  <button class="navbtn" onclick="nav('calendar',this)">Terminkalender</button>
+  <button class="navbtn" onclick="nav('settings',this)">Backup / Import / Export</button>
+</aside>
+<main class="main">
+<section id="dash" class="view active">
+<h2>Dashboard</h2>
+<div class="grid stats">
+ <div class="card"><div class="statLabel">Rapporte</div><div class="statNum" id="sReports">0</div></div>
+ <div class="card"><div class="statLabel">Offen</div><div class="statNum" id="sOpen">0</div></div>
+ <div class="card"><div class="statLabel">Monteure</div><div class="statNum" id="sMont">0</div></div>
+ <div class="card"><div class="statLabel">Netzbetreiber</div><div class="statNum" id="sNetz">0</div></div>
+</div>
+<div class="card" style="margin-top:18px"><h3>Letzte Rapporte</h3><div id="recent"></div></div>
+</section>
+<section id="reports" class="view">
+<h2>Rapporte</h2>
+<div class="toolbar"><button class="btn gold" onclick="newReport()">+ Neuer Rapport</button><button class="btn" onclick="quickManualJob()">+ Auftrag schnell hinzufügen</button><button class="btn" onclick="importExcelClick()">Excel importieren</button><button class="btn" onclick="exportReportsExcel()">Auswahl Excel</button><button class="btn" onclick="printSelected()">Auswahl PDF/Druck</button><button class="btn red" onclick="deleteSelectedReports()">Auswahl löschen</button></div>
+<input class="search" id="qReports" placeholder="Rapporte suchen..." oninput="render()">
+<div id="reportList" class="grid"></div>
+</section>
+<section id="monteurs" class="view">
+<h2>Monteure</h2>
+<div class="toolbar"><button class="btn gold" onclick="editMonteur()">+ Monteur</button></div>
+<input class="search" id="qMont" placeholder="Monteur suchen..." oninput="render()"><div id="monteurList" class="grid"></div>
+</section>
+<section id="companies" class="view">
+<h2>Firmen</h2>
+<div class="toolbar"><button class="btn gold" onclick="editCompany()">+ Firma</button></div>
+<input class="search" id="qComp" placeholder="Firma suchen..." oninput="render()"><div id="companyList" class="grid"></div>
+</section>
+<section id="operators" class="view">
+<h2>Netzbetreiber</h2>
+<div class="toolbar"><button class="btn gold" onclick="editOperator()">+ Netzbetreiber</button><button class="btn" onclick="importOperatorCSV()">Netzbetreiber CSV importieren</button></div>
+<input class="search" id="qOp" placeholder="Netzbetreiber suchen..." oninput="render()"><div id="operatorList" class="grid"></div>
+</section>
+<section id="catalogs" class="view">
+<h2>Kataloge</h2>
+<div class="grid">
+<div class="card"><h3>Störungsbilder</h3><div class="toolbar"><button class="btn gold" onclick="addFault()">+ Störungsbild</button></div><div id="faultList"></div></div>
+<div class="card"><h3>Tätigkeiten / Checkliste</h3><div class="toolbar"><button class="btn gold" onclick="addActivity()">+ Tätigkeit</button></div><div id="activityList"></div></div>
+</div>
+</section>
+<section id="settings" class="view">
+<h2>Backup / Daten</h2>
+<div class="grid">
+<div class="card"><h3>Excel Aufträge importieren</h3><div class="mobileFileHint">iPhone/Samsung: Datei vorher in „Dateien“ oder „Downloads“ speichern. Danach hier auswählen. Excel, CSV und Backups bleiben lokal im Browser.</div><p style="color:var(--muted)">Importiert Excel-Spalten automatisch: Kunde, Adresse, Auftrag, Tätigkeit, Netzbetreiber, Zähler, Gateway, Datum usw.</p><button class="btn gold" onclick="importExcelClick()">Excel auswählen</button><input id="excelFile" type="file" hidden accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" onchange="importExcel(event)"></div>
+<div class="card"><h3>Backup</h3><button class="btn" onclick="exportBackup()">JSON Backup exportieren</button><button class="btn" onclick="backupInput.click()">JSON Backup importieren</button><input id="backupInput" type="file" hidden accept=".json,application/json" onchange="importBackup(event)"></div>
+<div class="card"><h3>Daten aktualisieren</h3><p style="color:var(--muted)">Wenn alte Browserdaten oder Safari-Cache noch alte Netzbetreiber anzeigen, hier die neuen Startdaten erneut einlesen.</p><button class="btn gold" onclick="forceMergeSeeds()">Startlisten neu einlesen</button><button class="btn red" onclick="clearAppData()">App-Daten komplett zurücksetzen</button></div><div class="card"><h3>Hinweis</h3><p style="color:var(--muted)">Alle Daten bleiben lokal im Browser gespeichert, auch wenn die App geschlossen wird. Für Firmenbetrieb mit mehreren Geräten ist später Version B mit Cloud-Datenbank sinnvoll.</p></div>
+</div>
+</section>
+
+<section id="tour" class="view">
+<h2>Tourenplanung</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Planungsdaten</h3>
+    <div class="row3">
+      <div class="field"><label>Startdatum / Anreisetag</label><input id="tp_startDate" type="date"></div>
+      <div class="field"><label>Rückreisedatum</label><input id="tp_returnDate" type="date"></div>
+      <div class="field"><label>Zeitraum</label><select id="tp_weeks"><option value="1">1 Woche</option><option value="2">2 Wochen</option><option value="3">3 Wochen</option><option value="4">4 Wochen</option></select></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Max. Aufträge pro normalem Tag</label><input id="tp_maxJobs" type="number" min="1" value="8"></div>
+      <div class="field"><label>Anreisezeit Minuten</label><input id="tp_arrivalTravel" type="number" min="0" value="180"></div>
+      <div class="field"><label>Rückreisezeit Minuten</label><input id="tp_returnTravel" type="number" min="0" value="180"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Anreise / Startstandort</label><input id="tp_startLocation" placeholder="z. B. Magdeburg oder Firmenadresse"></div>
+      <div class="field"><label>Hotel / täglicher Start-Zielpunkt</label><input id="tp_hotel" placeholder="Hoteladresse oder Einsatzort-Basis"></div>
+      <div class="field"><label>Rückreise / Zielstandort</label><input id="tp_returnLocation" placeholder="z. B. Magdeburg oder Heimatstandort"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Arbeitsbeginn</label><input id="tp_workStart" type="time" value="08:00"></div>
+      <div class="field"><label>Arbeitsende geplant</label><input id="tp_workEnd" type="time" value="17:00"></div>
+      <div class="field"><label>Pause Minuten</label><input id="tp_break" type="number" min="0" value="30"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Zeit je Auftrag Minuten</label><input id="tp_jobMinutes" type="number" min="5" value="45"></div>
+      <div class="field"><label>Fahrzeit-Puffer je Auftrag Minuten</label><input id="tp_travelBuffer" type="number" min="0" value="20"></div>
+      <div class="field"><label>Tourenmodus</label><select id="tp_mode"><option value="priority">Priorität zuerst</option><option value="address">Adresse/Ort sortieren</option></select></div>
+    </div>
+    <div class="infoCard">
+      Die App erstellt eine Wochen- oder Mehrwochenplanung aus den importierten Aufträgen. Anreise- und Rückreisezeit werden am jeweiligen Tag berücksichtigt, damit dort automatisch weniger Aufträge geplant werden. Jede Adresse bekommt zusätzlich einen eigenen Google-Maps-Link.
+    </div>
+    <div class="toolbar">
+      <button class="btn gold" onclick="generateTourPlan()">Tour planen</button>
+      <button class="btn" onclick="printTourPlan()">Tourplan drucken</button>
+      <button class="btn" onclick="exportTourCSV()">Tourplan CSV</button>
+      <button class="btn red" onclick="clearTourPlan()">Tourplan löschen</button>
+    </div>
+  </div>
+  <div id="tourResult" class="grid"></div>
+</div>
+</section>
+
+
+<section id="calendar" class="view">
+<h2>Terminkalender</h2>
+<div class="grid">
+  <div class="card">
+    <h3>Neuen Termin eintragen</h3>
+    <div class="row3">
+      <div class="field"><label>Datum</label><input id="cal_date" type="date"></div>
+      <div class="field"><label>Uhrzeit</label><input id="cal_time" type="time"></div>
+      <div class="field"><label>Status</label><select id="cal_status"><option>Geplant</option><option>Bestätigt</option><option>Erledigt</option><option>Verschoben</option><option>Abgesagt</option></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Kunde</label><input id="cal_customer" placeholder="Kunde / Ansprechpartner"></div>
+      <div class="field"><label>Telefon</label><input id="cal_phone" placeholder="Telefonnummer"></div>
+    </div>
+    <div class="field"><label>Adresse</label><input id="cal_address" placeholder="Einsatzadresse"></div>
+    <div class="field"><label>Grund / Notiz</label><textarea id="cal_note" placeholder="z. B. Kunde ruft an, Terminwunsch, Rückruf, Nacharbeit"></textarea></div>
+    <div class="toolbar">
+      <button class="btn gold" onclick="addCalendarEvent()">Termin speichern</button>
+      <button class="btn" onclick="calendarToReport()">Termin als Rapport anlegen</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Termine</h3>
+    <input class="search" id="qCalendar" placeholder="Termine suchen..." oninput="renderCalendar()">
+    <div id="calendarList" class="grid"></div>
+  </div>
+</div>
+</section>
+
+</main>
+</div>
+<div class="modal" id="modal"><div class="sheet"><div class="sheetInner" id="modalInner"></div></div></div>
+<div class="toast" id="toast"></div><div class="mobileDownloadBox" id="mobileDownloadBox"></div>
+<div id="printDoc" class="printDoc"></div>
+<script>
+const SEED_OPERATORS = ["50Hertz Transmission GmbH", "Amprion GmbH", "TenneT TSO GmbH", "TransnetBW GmbH", "Westnetz GmbH", "Netze BW GmbH", "Bayernwerk Netz GmbH", "Avacon Netz GmbH", "E.DIS Netz GmbH", "Schleswig-Holstein Netz AG", "Syna GmbH", "N-ERGIE Netz GmbH", "LEW Verteilnetz GmbH", "EWE NETZ GmbH", "Stromnetz Berlin GmbH", "Stromnetz Hamburg GmbH", "RheinNetz GmbH", "NEW Netz GmbH", "RNG Rheinische NETZGesellschaft mbH", "Mainzer Netze GmbH", "MITNETZ STROM GmbH", "TEN Thüringer Energienetze GmbH & Co. KG", "SWM Infrastruktur GmbH & Co. KG", "Netzgesellschaft Düsseldorf mbH", "Dortmunder Netz GmbH", "Stadtwerke Münster Netzgesellschaft mbH", "Stadtwerke Bonn Netz GmbH", "Stadtwerke Karlsruhe Netzservice GmbH", "Stadtwerke Augsburg Energie GmbH", "Stadtwerke Leipzig Netz GmbH", "Stadtwerke Halle Netz GmbH", "Stadtwerke Magdeburg GmbH & Co. KG", "Netze Magdeburg GmbH", "Braunschweiger Netz GmbH", "enercity Netz GmbH", "Stadtwerke Hannover AG", "Stadtwerke Bremen AG / wesernetz Bremen GmbH", "wesernetz Bremerhaven GmbH", "Stadtwerke Kiel Netz GmbH", "Stadtwerke Lübeck Netz GmbH", "Stadtwerke Flensburg GmbH", "Stadtwerke Schwerin Netzgesellschaft mbH", "Stadtwerke Rostock Netzgesellschaft mbH", "Netz Leipzig GmbH", "DREWAG NETZ GmbH", "SachsenNetze GmbH", "ENSO NETZ GmbH", "Netzgesellschaft Chemnitz mbH", "Zwickauer Energieversorgung GmbH", "Stadtwerke Jena Netze GmbH", "Stadtwerke Erfurt Netz GmbH", "Stadtwerke Weimar Stadtversorgungs-GmbH", "Energieversorgung Gera Netz GmbH", "Stadtwerke Osnabrück Netz GmbH", "Stadtwerke Bielefeld Netz GmbH", "Stadtwerke Gütersloh GmbH", "Stadtwerke Paderborn GmbH", "Stadtwerke Detmold GmbH", "Stadtwerke Bochum Netz GmbH", "Stadtwerke Essen Netz GmbH", "Duisburger Versorgungs- und Verkehrsgesellschaft mbH", "Stadtwerke Duisburg Netzgesellschaft mbH", "Stadtwerke Krefeld Netzgesellschaft mbH", "Wuppertaler Stadtwerke Netz GmbH", "Stadtwerke Solingen GmbH", "Stadtwerke Remscheid GmbH", "Stadtwerke Aachen Netz GmbH", "Regionetz GmbH", "Stadtwerke Trier Versorgungs-GmbH", "Pfalzwerke Netz AG", "Stadtwerke Kaiserslautern Versorgungs-AG", "Energienetze Mittelrhein GmbH & Co. KG", "KEVAG Verteilnetz GmbH", "Stadtwerke Saarbrücken Netz AG", "VSE Verteilnetz GmbH", "Stadtwerke Homburg GmbH", "Stadtwerke St. Ingbert GmbH", "Stadtwerke Tübingen GmbH", "Stadtwerke Reutlingen GmbH", "FairNetz GmbH", "Stadtwerke Ulm/Neu-Ulm Netze GmbH", "Netze ODR GmbH", "Stadtwerke Konstanz GmbH", "Stadtwerke Heidelberg Netze GmbH", "MVV Netze GmbH", "Stadtwerke Weinheim GmbH", "bnNETZE GmbH", "badenovaNETZE GmbH", "Energiedienst Netz GmbH", "Stadtwerke Villingen-Schwenningen GmbH", "Stadtwerke Schwäbisch Hall GmbH", "Stadtwerke Ludwigsburg-Kornwestheim GmbH", "Stuttgarter Netze GmbH", "Netze-Gesellschaft Südwest mbH", "Stadtwerke Sindelfingen GmbH", "Stadtwerke Böblingen GmbH", "Regensburg Netz GmbH", "Stadtwerke Regensburg GmbH", "infra fürth gmbh", "Stadtwerke Fürth GmbH", "Stadtwerke Erlangen AG", "Stadtwerke Würzburg Netz GmbH", "Main-Donau Netzgesellschaft mbH", "Stadtwerke Bamberg Energie- und Wasserversorgungs GmbH", "Stadtwerke Bayreuth Energie und Wasser GmbH", "Stadtwerke Ingolstadt Netze GmbH", "Stadtwerke Landshut GmbH", "Stadtwerke Rosenheim Netze GmbH", "Stadtwerke Passau GmbH", "Stadtwerke Augsburg Netze GmbH", "AllgäuNetz GmbH & Co. KG", "Elektrizitätswerke Reutte AG", "Stadtwerke Lindau GmbH & Co. KG", "Überlandwerk Rhön GmbH", "RhönEnergie Fulda GmbH", "OVAG Netz GmbH", "EAM Netz GmbH", "Stadtwerke Gießen AG", "Stadtwerke Marburg GmbH", "Stadtwerke Wetzlar GmbH", "Mainova AG / NRM Netzdienste Rhein-Main GmbH", "NRM Netzdienste Rhein-Main GmbH", "Stadtwerke Hanau GmbH", "ENTEGA AG / e-netz Südhessen AG", "e-netz Südhessen AG", "Stadtwerke Darmstadt Netz GmbH", "Stadtwerke Rüsselsheim GmbH", "Stadtwerke Wiesbaden Netz GmbH", "ESWE Versorgungs AG", "Stadtwerke Kassel Netz und Service GmbH", "Städtische Werke Netz + Service GmbH", "Stadtwerke Göttingen AG", "Harz Energie Netz GmbH", "Stadtwerke Wolfsburg AG", "LSW Netz GmbH & Co. KG", "Celle-Uelzen Netz GmbH", "Stadtwerke Celle GmbH", "Stadtwerke Peine GmbH", "Stadtwerke Hildesheim AG", "Stadtwerke Hameln Weserbergland GmbH", "Stadtwerke Schaumburg-Lippe GmbH", "Stadtwerke Lüneburg GmbH", "Stadtwerke Stade GmbH", "Stadtwerke Cuxhaven GmbH", "Stadtwerke Emden GmbH", "Stadtwerke Oldenburg i.O. GmbH", "Stadtwerke Delmenhorst GmbH", "Stadtwerke Wilhelmshaven GmbH", "Stadtwerke Leer AöR", "Stadtwerke Aurich GmbH", "Stadtwerke Norden GmbH", "Stadtwerke Norderstedt", "Stadtwerke Neumünster GmbH", "Stadtwerke Elmshorn GmbH", "Stadtwerke Pinneberg GmbH", "Stadtwerke Wedel GmbH", "Stadtwerke Ahrensburg GmbH", "Stadtwerke Geesthacht GmbH", "Stadtwerke Heide GmbH", "Stadtwerke Husum GmbH", "Stadtwerke Itzehoe GmbH", "Stadtwerke Rendsburg GmbH", "Stadtwerke Eutin GmbH", "Stadtwerke Bad Oldesloe", "Stadtwerke Greifswald GmbH", "Stadtwerke Stralsund GmbH", "Stadtwerke Neubrandenburg GmbH", "Stadtwerke Waren GmbH", "Stadtwerke Wismar GmbH", "Stadtwerke Pasewalk GmbH", "Stadtwerke Prenzlau GmbH", "Stadtwerke Frankfurt (Oder) GmbH", "Energie und Wasser Potsdam GmbH", "Netzgesellschaft Potsdam GmbH", "Stadtwerke Brandenburg an der Havel GmbH", "Stadtwerke Cottbus GmbH", "SpreeGas Gesellschaft für Gasversorgung und Energiedienstleistung mbH", "Stadtwerke Schwedt GmbH", "Stadtwerke Oranienburg GmbH", "Stadtwerke Eberswalde GmbH", "Stadtwerke Bernau GmbH", "Stadtwerke Neuruppin GmbH", "Stadtwerke Wittenberge GmbH", "Stadtwerke Lutherstadt Wittenberg GmbH", "Stadtwerke Dessau-Roßlau GmbH", "Stadtwerke Bitterfeld-Wolfen GmbH", "Stadtwerke Merseburg GmbH", "Stadtwerke Weißenfels GmbH", "Stadtwerke Naumburg GmbH", "Stadtwerke Aschersleben GmbH", "Stadtwerke Quedlinburg GmbH", "Stadtwerke Wernigerode GmbH", "Stadtwerke Halberstadt GmbH", "Stadtwerke Stendal GmbH", "Stadtwerke Burg GmbH", "Stadtwerke Zerbst GmbH", "Stadtwerke Bernburg GmbH", "Stadtwerke Köthen GmbH", "Stadtwerke Sangerhausen GmbH", "Stadtwerke Eisleben GmbH", "Stadtwerke Nordhausen GmbH", "Stadtwerke Mühlhausen GmbH", "Stadtwerke Eisenach GmbH", "Stadtwerke Gotha GmbH", "Stadtwerke Suhl/Zella-Mehlis GmbH", "Stadtwerke Meiningen GmbH", "Stadtwerke Arnstadt GmbH", "Stadtwerke Saalfeld GmbH", "Stadtwerke Rudolstadt GmbH", "Stadtwerke Greiz GmbH", "Stadtwerke Zeulenroda GmbH", "Stadtwerke Altenburg GmbH", "Stadtwerke Plauen GmbH", "Stadtwerke Annaberg-Buchholz GmbH", "Stadtwerke Freiberg AG", "Stadtwerke Riesa GmbH", "Stadtwerke Meißen GmbH", "Stadtwerke Bautzen GmbH", "Stadtwerke Görlitz AG", "Stadtwerke Zittau GmbH", "Stadtwerke Hoyerswerda GmbH", "Stadtwerke Weißwasser GmbH", "Stadtwerke Pirna GmbH", "Stadtwerke Freital GmbH", "Stadtwerke Döbeln GmbH", "Stadtwerke Delitzsch GmbH", "Stadtwerke Torgau GmbH", "Stadtwerke Grimma GmbH", "Stadtwerke Borna GmbH", "Stadtwerke Oschatz GmbH", "Stadtwerke Minden GmbH", "Stadtwerke Herford GmbH", "Stadtwerke Löhne GmbH", "Stadtwerke Bad Oeynhausen GmbH", "Stadtwerke Lemgo GmbH", "Stadtwerke Lippe-Weser Service GmbH", "Stadtwerke Soest GmbH", "Stadtwerke Lippstadt GmbH", "Stadtwerke Arnsberg GmbH", "Stadtwerke Iserlohn GmbH", "Stadtwerke Hagen GmbH", "ENERVIE Vernetzt GmbH", "Stadtwerke Lüdenscheid GmbH", "Stadtwerke Siegen GmbH", "Westfalen Weser Netz GmbH", "Stadtwerke Ahlen GmbH", "Stadtwerke Hamm GmbH", "Stadtwerke Unna GmbH", "Stadtwerke Lünen GmbH", "Stadtwerke Schwerte GmbH", "Stadtwerke Castrop-Rauxel GmbH", "Stadtwerke Herne AG", "Stadtwerke Recklinghausen GmbH", "GELSENWASSER Energienetze GmbH", "Stadtwerke Gelsenkirchen GmbH", "Stadtwerke Bottrop GmbH", "Stadtwerke Gladbeck GmbH", "Stadtwerke Oberhausen GmbH", "ELE Verteilnetz GmbH", "Stadtwerke Mülheim an der Ruhr GmbH", "Energieversorgung Oberhausen AG", "Stadtwerke Ratingen GmbH", "Stadtwerke Velbert GmbH", "Stadtwerke Neuss Energie und Wasser GmbH", "Stadtwerke Mönchengladbach GmbH", "Stadtwerke Viersen GmbH", "Stadtwerke Heinsberg GmbH", "Stadtwerke Jülich GmbH", "Stadtwerke Düren GmbH", "Stadtwerke Euskirchen GmbH", "Stadtwerke Brühl GmbH", "Stadtwerke Hürth AöR", "Stadtwerke Troisdorf GmbH", "Stadtwerke Siegburg GmbH", "Stadtwerke Leverkusen GmbH", "BELKAW GmbH", "Stadtwerke Bergisch Gladbach GmbH", "AggerEnergie GmbH", "OVAG Oberbergische Verkehrsgesellschaft AG", "Stadtwerke Gummersbach GmbH", "Stadtwerke Attendorn GmbH", "Stadtwerke Olpe GmbH", "Stadtwerke Bad Honnef AG", "Energieversorgung Mittelrhein AG", "Stadtwerke Andernach GmbH", "Stadtwerke Neuwied GmbH", "Stadtwerke Mayen GmbH", "Stadtwerke Bad Kreuznach GmbH", "Stadtwerke Bingen am Rhein GmbH", "Stadtwerke Worms GmbH", "Stadtwerke Speyer GmbH", "Stadtwerke Neustadt an der Weinstraße GmbH", "Stadtwerke Landau in der Pfalz GmbH", "Stadtwerke Pirmasens Versorgungs GmbH", "Stadtwerke Zweibrücken GmbH", "Stadtwerke Völklingen Netz GmbH", "Stadtwerke Saarlouis GmbH", "Stadtwerke Merzig GmbH", "Stadtwerke Neunkirchen GmbH"];
+const SEED_FAULTS = ["Kommunikationsstörung lt. GWA / SMGW nicht erreichbar", "SMGW offline", "WAN gestört / keine Verbindung", "WAN Signal zu schwach", "LTE/450 MHz Empfang schlecht", "BPL/PLC Kommunikation gestört", "HAN Schnittstelle gestört", "CLS Kanal gestört", "Gateway Neustart erforderlich", "Gateway Zertifikat / TLS Fehler", "Firmwarefehler SMGW", "Zeitabweichung / Zeitsynchronisation fehlerhaft", "Zähler wird vom Gateway nicht erkannt", "Zählerkommunikation D0/LMN gestört", "LMN Bus gestört", "Falsche Parametrierung", "Tarifschaltung fehlerhaft", "Messwertübertragung unvollständig", "Messwerte fehlen im Backend", "Zählerdisplay ohne Funktion", "Zähler defekt", "Zählernummer nicht lesbar", "Zählerstand nicht plausibel", "Zählwerksfehler 1.8.0", "Zählwerksfehler 2.8.0", "Drehrichtungsfehler", "Phasenfolge falsch", "Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt", "Neutralleiterproblem", "Unterspannung", "Überspannung", "Kurzschlussverdacht", "Erdschlussverdacht", "Sicherung ausgelöst", "NH-Sicherung ausgelöst", "SLS-Schalter ausgelöst", "Hauptschalter defekt", "Klemmstelle lose", "Klemmstelle beschädigt", "Brand-/Schmorstelle", "Plombe beschädigt", "Klemmdeckel fehlt/beschädigt", "Wandlerverdrahtung fehlerhaft", "Stromwandler defekt", "Wandlerfaktor unklar", "Prüfklemme defekt", "RLM-Kommunikation gestört", "Modem offline", "SIM-Karte gestört", "Antenne defekt", "Kunde nicht angetroffen / Zugang nicht möglich", "Kunde nicht angetroffen", "Arbeit verweigert", "Anlage nicht TAB-konform", "Zählerplatz nicht geeignet", "APZ/RfZ fehlt", "OAR/AAR nicht normgerecht", "HAK nicht zugänglich", "HAK beschädigt", "Anlage plombiert, Freigabe erforderlich", "Sperrung nicht möglich", "Entsperrung nicht möglich", "PV-Anlage Rückspeisung beachten", "Wallbox / Ladeeinrichtung vorhanden", "Wärmepumpe vorhanden", "Messkonzept unklar", "Fotodokumentation erforderlich", "Nacharbeit erforderlich", "Material fehlt", "Terminabbruch", "Gefahr im Verzug", "Sonstiges / manuell"];
+const SEED_ACTIVITIES = ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "SLS/SH-Schalter geprüft", "Plomben kontrolliert", "Zähler alt ausgebaut", "Zähler neu eingebaut", "Zählerstände dokumentiert", "Gateway montiert", "Gateway getauscht", "Gateway neu gestartet", "SMGW parametriert", "Antenne montiert/geprüft", "WAN geprüft", "HAN geprüft", "LMN geprüft", "CLS geprüft", "Kommunikationsstrecke geprüft", "Backend-Erreichbarkeit geprüft", "Messwerte geprüft", "Drehfeld geprüft", "Spannungen gemessen", "Schleifenimpedanz gemessen", "RCD geprüft", "Isolationsmessung durchgeführt", "Wandler geprüft", "Wandlerverdrahtung geprüft", "Prüfklemme geprüft", "RLM-Modem geprüft", "SIM/Kommunikationsmodul geprüft", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Wechselbeleg erstellt", "Einwurfkarte eingeworfen", "Kunde unterschrieben", "Material verbaut", "Nacharbeit aufgenommen", "Störung behoben", "Störung nicht behoben", "Weiterleitung an Netzbetreiber", "Weiterleitung an GWA/MSB", "Rapport abgeschlossen"];
+const TYPE_ACTIVITY_MAP = {"Entstörung iMSys/SMGW": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Gateway neu gestartet", "Gateway getauscht", "SMGW parametriert", "WAN geprüft", "HAN geprüft", "LMN geprüft", "CLS geprüft", "Kommunikationsstrecke geprüft", "Backend-Erreichbarkeit geprüft", "Messwerte geprüft", "Antenne montiert/geprüft", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Störung behoben", "Störung nicht behoben", "Weiterleitung an GWA/MSB", "Rapport abgeschlossen"], "Zählertausch": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "SLS/SH-Schalter geprüft", "Plomben kontrolliert", "Zähler alt ausgebaut", "Zähler neu eingebaut", "Zählerstände dokumentiert", "Drehfeld geprüft", "Spannungen gemessen", "Wechselbeleg erstellt", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Kunde unterschrieben", "Rapport abgeschlossen"], "Sperrung": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "Plomben kontrolliert", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Kunde unterschrieben", "Sperrung nicht möglich", "Weiterleitung an Netzbetreiber", "Rapport abgeschlossen"], "Entsperrung": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "Plomben kontrolliert", "Spannungen gemessen", "Drehfeld geprüft", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Kunde unterschrieben", "Entsperrung nicht möglich", "Rapport abgeschlossen"], "RLM/Wandlermessung": ["Anfahrt durchgeführt", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Wandler geprüft", "Wandlerverdrahtung geprüft", "Prüfklemme geprüft", "RLM-Modem geprüft", "SIM/Kommunikationsmodul geprüft", "Kommunikationsstrecke geprüft", "Messwerte geprüft", "Spannungen gemessen", "Drehfeld geprüft", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Rapport abgeschlossen"], "Zählerplatzprüfung": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "SLS/SH-Schalter geprüft", "Plomben kontrolliert", "APZ/RfZ fehlt", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Nacharbeit aufgenommen", "Weiterleitung an Netzbetreiber", "Rapport abgeschlossen"], "AuS Tätigkeit": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Zählerplatz geprüft", "HAK geprüft", "Vorsicherung geprüft", "SLS/SH-Schalter geprüft", "Plomben kontrolliert", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Material verbaut", "Nacharbeit aufgenommen", "Rapport abgeschlossen"], "Inbetriebnahme": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Zählerplatz geprüft", "Zähler neu eingebaut", "Gateway montiert", "SMGW parametriert", "WAN geprüft", "LMN geprüft", "Messwerte geprüft", "Drehfeld geprüft", "Spannungen gemessen", "Schleifenimpedanz gemessen", "RCD geprüft", "Isolationsmessung durchgeführt", "Kunde unterschrieben", "Rapport abgeschlossen"], "Wartung": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Zählerplatz geprüft", "Gateway neu gestartet", "Kommunikationsstrecke geprüft", "Messwerte geprüft", "Spannungen gemessen", "RCD geprüft", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Nacharbeit aufgenommen", "Rapport abgeschlossen"], "Elektroinstallation": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Zählerplatz geprüft", "Material verbaut", "Drehfeld geprüft", "Spannungen gemessen", "Schleifenimpedanz gemessen", "RCD geprüft", "Isolationsmessung durchgeführt", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Kunde unterschrieben", "Rapport abgeschlossen"], "Multi Elektro Rapport": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Spannungsfreiheit festgestellt", "Zählerplatz geprüft", "Gateway montiert", "SMGW parametriert", "WAN geprüft", "LMN geprüft", "Wandler geprüft", "Wandlerverdrahtung geprüft", "Material verbaut", "Drehfeld geprüft", "Spannungen gemessen", "Schleifenimpedanz gemessen", "RCD geprüft", "Isolationsmessung durchgeführt", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Kunde unterschrieben", "Rapport abgeschlossen"], "Sonstiges": ["Anfahrt durchgeführt", "Kunde informiert", "Einwurfkarte eingeworfen", "Zugang geprüft", "Arbeitsstelle gesichert", "5 Sicherheitsregeln beachtet", "Foto vor Arbeit erstellt", "Foto nach Arbeit erstellt", "Nacharbeit aufgenommen", "Rapport abgeschlossen"]};
+const ACTIVITY_FAULT_MAP = {"Anfahrt durchgeführt": ["Kunde nicht angetroffen", "Kunde nicht angetroffen / Zugang nicht möglich", "Arbeit verweigert", "Terminabbruch", "Material fehlt", "Sonstiges / manuell"], "Einwurfkarte eingeworfen": ["Kunde nicht angetroffen", "Kunde nicht angetroffen / Zugang nicht möglich", "Terminabbruch"], "Kunde informiert": ["Kunde nicht angetroffen", "Arbeit verweigert", "Terminabbruch", "Nacharbeit erforderlich", "Sonstiges / manuell"], "Zugang geprüft": ["Kunde nicht angetroffen / Zugang nicht möglich", "Arbeit verweigert", "HAK nicht zugänglich", "Anlage plombiert, Freigabe erforderlich", "Zählerplatz nicht geeignet"], "Arbeitsstelle gesichert": ["Gefahr im Verzug", "Brand-/Schmorstelle", "Kurzschlussverdacht", "Erdschlussverdacht", "Anlage nicht TAB-konform"], "5 Sicherheitsregeln beachtet": ["Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt", "Neutralleiterproblem", "Gefahr im Verzug"], "Spannungsfreiheit festgestellt": ["Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt", "Unterspannung", "Überspannung", "Neutralleiterproblem"], "Zählerplatz geprüft": ["Zählerplatz nicht geeignet", "Anlage nicht TAB-konform", "APZ/RfZ fehlt", "OAR/AAR nicht normgerecht", "Klemmdeckel fehlt/beschädigt", "Plombe beschädigt"], "HAK geprüft": ["HAK nicht zugänglich", "HAK beschädigt", "NH-Sicherung ausgelöst", "Sicherung ausgelöst", "Brand-/Schmorstelle"], "Vorsicherung geprüft": ["Sicherung ausgelöst", "NH-Sicherung ausgelöst", "Unterspannung", "Überspannung", "Kurzschlussverdacht"], "SLS/SH-Schalter geprüft": ["SLS-Schalter ausgelöst", "Hauptschalter defekt", "Sicherung ausgelöst", "Klemmstelle lose"], "Plomben kontrolliert": ["Plombe beschädigt", "Klemmdeckel fehlt/beschädigt", "Anlage plombiert, Freigabe erforderlich"], "Zähler alt ausgebaut": ["Zähler defekt", "Zählernummer nicht lesbar", "Zählerstand nicht plausibel", "Klemmstelle beschädigt"], "Zähler neu eingebaut": ["Zählerdisplay ohne Funktion", "Drehrichtungsfehler", "Phasenfolge falsch", "Zähler wird vom Gateway nicht erkannt", "Falsche Parametrierung"], "Zählerstände dokumentiert": ["Zählerstand nicht plausibel", "Zählwerksfehler 1.8.0", "Zählwerksfehler 2.8.0", "Zählernummer nicht lesbar"], "Gateway montiert": ["SMGW offline", "WAN gestört / keine Verbindung", "WAN Signal zu schwach", "LTE/450 MHz Empfang schlecht", "Zähler wird vom Gateway nicht erkannt", "LMN Bus gestört"], "Gateway getauscht": ["SMGW offline", "Gateway Zertifikat / TLS Fehler", "Firmwarefehler SMGW", "Gateway Neustart erforderlich", "Zählerkommunikation D0/LMN gestört"], "Gateway neu gestartet": ["SMGW offline", "Gateway Neustart erforderlich", "Firmwarefehler SMGW", "Zeitabweichung / Zeitsynchronisation fehlerhaft"], "SMGW parametriert": ["Falsche Parametrierung", "Gateway Zertifikat / TLS Fehler", "Tarifschaltung fehlerhaft", "Messwerte fehlen im Backend", "Messwertübertragung unvollständig"], "Antenne montiert/geprüft": ["WAN Signal zu schwach", "LTE/450 MHz Empfang schlecht", "Antenne defekt", "WAN gestört / keine Verbindung"], "WAN geprüft": ["WAN gestört / keine Verbindung", "WAN Signal zu schwach", "LTE/450 MHz Empfang schlecht", "BPL/PLC Kommunikation gestört", "Kommunikationsstörung lt. GWA / SMGW nicht erreichbar"], "HAN geprüft": ["HAN Schnittstelle gestört", "CLS Kanal gestört", "Gateway Zertifikat / TLS Fehler"], "LMN geprüft": ["LMN Bus gestört", "Zählerkommunikation D0/LMN gestört", "Zähler wird vom Gateway nicht erkannt"], "CLS geprüft": ["CLS Kanal gestört", "HAN Schnittstelle gestört", "Gateway Zertifikat / TLS Fehler"], "Kommunikationsstrecke geprüft": ["Kommunikationsstörung lt. GWA / SMGW nicht erreichbar", "SMGW offline", "WAN gestört / keine Verbindung", "BPL/PLC Kommunikation gestört", "Modem offline", "SIM-Karte gestört"], "Backend-Erreichbarkeit geprüft": ["Messwerte fehlen im Backend", "Messwertübertragung unvollständig", "Kommunikationsstörung lt. GWA / SMGW nicht erreichbar", "Gateway Zertifikat / TLS Fehler"], "Messwerte geprüft": ["Messwerte fehlen im Backend", "Messwertübertragung unvollständig", "Zählerstand nicht plausibel", "Unterspannung", "Überspannung"], "Drehfeld geprüft": ["Drehrichtungsfehler", "Phasenfolge falsch", "Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt"], "Spannungen gemessen": ["Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt", "Unterspannung", "Überspannung", "Neutralleiterproblem"], "Schleifenimpedanz gemessen": ["Kurzschlussverdacht", "Klemmstelle lose", "Neutralleiterproblem", "Anlage nicht TAB-konform"], "RCD geprüft": ["Anlage nicht TAB-konform", "Gefahr im Verzug", "Nacharbeit erforderlich"], "Isolationsmessung durchgeführt": ["Erdschlussverdacht", "Kurzschlussverdacht", "Anlage nicht TAB-konform", "Gefahr im Verzug"], "Wandler geprüft": ["Stromwandler defekt", "Wandlerfaktor unklar", "Wandlerverdrahtung fehlerhaft", "Prüfklemme defekt"], "Wandlerverdrahtung geprüft": ["Wandlerverdrahtung fehlerhaft", "Stromwandler defekt", "Wandlerfaktor unklar", "Prüfklemme defekt"], "Prüfklemme geprüft": ["Prüfklemme defekt", "Wandlerverdrahtung fehlerhaft", "Stromwandler defekt"], "RLM-Modem geprüft": ["RLM-Kommunikation gestört", "Modem offline", "SIM-Karte gestört", "Antenne defekt"], "SIM/Kommunikationsmodul geprüft": ["SIM-Karte gestört", "Modem offline", "LTE/450 MHz Empfang schlecht", "WAN gestört / keine Verbindung"], "Foto vor Arbeit erstellt": ["Fotodokumentation erforderlich", "Nacharbeit erforderlich", "Anlage nicht TAB-konform"], "Foto nach Arbeit erstellt": ["Fotodokumentation erforderlich", "Nacharbeit erforderlich", "Sonstiges / manuell"], "Wechselbeleg erstellt": ["Zählernummer nicht lesbar", "Zählerstand nicht plausibel", "Nacharbeit erforderlich"], "Kunde unterschrieben": ["Kunde nicht angetroffen", "Arbeit verweigert", "Terminabbruch"], "Material verbaut": ["Material fehlt", "Nacharbeit erforderlich", "Klemmstelle beschädigt"], "Nacharbeit aufgenommen": ["Nacharbeit erforderlich", "Anlage nicht TAB-konform", "Zählerplatz nicht geeignet", "Material fehlt"], "Störung behoben": ["Sonstiges / manuell"], "Störung nicht behoben": ["Nacharbeit erforderlich", "Weiterleitung an Netzbetreiber", "Weiterleitung an GWA/MSB", "Gefahr im Verzug"], "Weiterleitung an Netzbetreiber": ["Spannung L1 fehlt", "Spannung L2 fehlt", "Spannung L3 fehlt", "Neutralleiterproblem", "HAK beschädigt", "Gefahr im Verzug"], "Weiterleitung an GWA/MSB": ["Kommunikationsstörung lt. GWA / SMGW nicht erreichbar", "Messwerte fehlen im Backend", "Gateway Zertifikat / TLS Fehler", "Falsche Parametrierung"], "Rapport abgeschlossen": ["Sonstiges / manuell"]};
+const ACTIVITY_DESCRIPTIONS = {"Anfahrt durchgeführt": "Start des Einsatzes vor Ort. Wird automatisch als Standardtätigkeit geführt.", "Kunde informiert": "Kunde, Ansprechpartner oder Auftraggeber wurde informiert oder kontaktiert.", "Zugang geprüft": "Zugang zur Anlage, Zählerplatz, HAK oder Technikraum wurde geprüft.", "Arbeitsstelle gesichert": "Arbeitsbereich abgesichert, Gefahrenbereich beachtet und Arbeitsumgebung geprüft.", "5 Sicherheitsregeln beachtet": "Freischalten, gegen Wiedereinschalten sichern, Spannungsfreiheit feststellen, erden/kurzschließen soweit erforderlich, benachbarte Teile abdecken.", "Spannungsfreiheit festgestellt": "Spannungsfreiheit wurde fachgerecht geprüft und dokumentiert.", "Zählerplatz geprüft": "Zählerplatz, Verteilerbereich, Plomben, Einbauumgebung und Zugänglichkeit geprüft.", "HAK geprüft": "Hausanschlusskasten auf Zugänglichkeit, Zustand und Auffälligkeiten geprüft.", "Vorsicherung geprüft": "Vorsicherungen beziehungsweise NH-/Zählervorsicherungen geprüft.", "SLS/SH-Schalter geprüft": "Selektiver Hauptleitungsschutzschalter beziehungsweise SH/SLS geprüft.", "Plomben kontrolliert": "Plombenstatus geprüft und Auffälligkeiten dokumentiert.", "Zähler alt ausgebaut": "Alter Zähler wurde ausgebaut und Zählerstand/Zählernummer dokumentiert.", "Zähler neu eingebaut": "Neuer Zähler wurde eingebaut und dokumentiert.", "Zählerstände dokumentiert": "Alle relevanten Registerstände wurden aufgenommen.", "Gateway montiert": "Smart-Meter-Gateway montiert oder bereitgestellt.", "Gateway getauscht": "SMGW getauscht, Seriennummern und Zustand dokumentiert.", "Gateway neu gestartet": "Gateway neu gestartet und Status danach geprüft.", "SMGW parametriert": "Gateway/Kommunikationsdaten technisch geprüft oder parametriert.", "Antenne montiert/geprüft": "Antenne und Empfangssituation geprüft.", "WAN geprüft": "WAN-Verbindung beziehungsweise Mobilfunk/BPL/450 MHz geprüft.", "HAN geprüft": "HAN-Schnittstelle geprüft.", "LMN geprüft": "LMN-Kommunikation zwischen Zähler und Gateway geprüft.", "CLS geprüft": "CLS-Kanal beziehungsweise Steuerbox-/CLS-Funktion geprüft.", "Kommunikationsstrecke geprüft": "Gesamte Kommunikationsstrecke vom Gerät bis Backend/GWA betrachtet.", "Backend-Erreichbarkeit geprüft": "Erreichbarkeit/Status im Backend, GWA oder System geprüft.", "Messwerte geprüft": "Messwerte, Registerwerte oder Plausibilität geprüft.", "Drehfeld geprüft": "Drehfeld beziehungsweise Phasenfolge geprüft.", "Spannungen gemessen": "Spannungen L-N und/oder L-L gemessen.", "Schleifenimpedanz gemessen": "Schleifenimpedanz gemessen und bewertet.", "RCD geprüft": "RCD/FI Funktion geprüft.", "Isolationsmessung durchgeführt": "Isolationsmessung durchgeführt und bewertet.", "Wandler geprüft": "Stromwandler, Wandlerdaten oder Wandlerfaktor geprüft.", "Wandlerverdrahtung geprüft": "Wandlerverdrahtung und Klemmenzuordnung geprüft.", "Prüfklemme geprüft": "Prüfklemme geprüft.", "RLM-Modem geprüft": "RLM-Modem/Kommunikation geprüft.", "SIM/Kommunikationsmodul geprüft": "SIM, Modem, Mobilfunk oder Kommunikationsmodul geprüft.", "Foto vor Arbeit erstellt": "Vorher-Foto zur Dokumentation aufgenommen.", "Foto nach Arbeit erstellt": "Nachher-Foto zur Dokumentation aufgenommen.", "Wechselbeleg erstellt": "Wechselbeleg/Arbeitsnachweis erstellt.", "Einwurfkarte eingeworfen":"Benachrichtigung oder Einwurfkarte wurde beim Kunden hinterlassen, wenn niemand angetroffen wurde.","Kunde unterschrieben": "Unterschrift Kunde/Auftraggeber eingeholt.", "Material verbaut": "Verbautes Material dokumentiert.", "Nacharbeit aufgenommen": "Nacharbeit, Klärfall oder offene Punkte dokumentiert.", "Störung behoben": "Störung wurde beseitigt.", "Störung nicht behoben": "Störung konnte nicht vollständig beseitigt werden.", "Weiterleitung an Netzbetreiber": "Klärung oder Maßnahmen beim Netzbetreiber erforderlich.", "Weiterleitung an GWA/MSB": "Klärung oder Maßnahmen beim GWA/MSB erforderlich.", "Rapport abgeschlossen": "Rapport vollständig abgeschlossen."};
+const FAULT_DESCRIPTIONS = {"Kommunikationsstörung lt. GWA / SMGW nicht erreichbar": "Gateway oder Messsystem ist aus Sicht Backend/GWA nicht erreichbar.", "SMGW offline": "Smart-Meter-Gateway meldet keine aktive Verbindung.", "WAN gestört / keine Verbindung": "Keine oder instabile WAN-Kommunikation.", "WAN Signal zu schwach": "Empfangspegel zu niedrig, Antennenposition prüfen.", "LTE/450 MHz Empfang schlecht": "Mobilfunk- oder 450-MHz-Versorgung unzureichend.", "BPL/PLC Kommunikation gestört": "Kommunikation über Powerline/BPL fehlerhaft.", "HAN Schnittstelle gestört": "HAN-Schnittstelle nicht nutzbar oder keine Verbindung.", "CLS Kanal gestört": "CLS-Kommunikation/Steuerkanal gestört.", "Gateway Neustart erforderlich": "Neustart als Maßnahme erforderlich oder durchgeführt.", "Gateway Zertifikat / TLS Fehler": "Zertifikats-, TLS- oder Sicherheitsverbindungsproblem.", "Firmwarefehler SMGW": "Firmware-/Softwarestatus auffällig.", "Zähler wird vom Gateway nicht erkannt": "Zähler erscheint nicht korrekt am LMN/Gateway.", "LMN Bus gestört": "Lokales metrologisches Netz gestört.", "Falsche Parametrierung": "Parameter, Tarif, Gerätedaten oder Backenddaten unplausibel.", "Messwerte fehlen im Backend": "Messwerte werden nicht übertragen oder angezeigt.", "Zählerdisplay ohne Funktion": "Display zeigt nichts oder fehlerhafte Anzeige.", "Zähler defekt": "Zähler mechanisch/elektrisch/kommunikativ defekt.", "Drehrichtungsfehler": "Drehfeld/Phasenfolge nicht korrekt.", "Phasenfolge falsch": "Phasenfolge entspricht nicht dem erwarteten Zustand.", "Spannung L1 fehlt": "Außenleiter L1 fehlt.", "Spannung L2 fehlt": "Außenleiter L2 fehlt.", "Spannung L3 fehlt": "Außenleiter L3 fehlt.", "Neutralleiterproblem": "N-Leiter auffällig, lose oder fehlerhaft.", "Kunde nicht angetroffen / Zugang nicht möglich": "Kunde nicht angetroffen oder Zugang zur Anlage nicht möglich.", "Kunde nicht angetroffen": "Kunde war nicht erreichbar oder nicht vor Ort.", "Arbeit verweigert": "Arbeit wurde durch Kunde/Ansprechpartner verweigert.", "Anlage nicht TAB-konform": "Anlage entspricht augenscheinlich nicht den technischen Anschlussbedingungen.", "Zählerplatz nicht geeignet": "Zählerplatz technisch/baulich nicht geeignet.", "APZ/RfZ fehlt": "APZ oder Raum für Zusatzanwendungen fehlt.", "HAK nicht zugänglich": "Hausanschlusskasten konnte nicht erreicht werden.", "HAK beschädigt": "Hausanschlusskasten auffällig oder beschädigt.", "Sperrung nicht möglich": "Sperrmaßnahme konnte nicht durchgeführt werden.", "Entsperrung nicht möglich": "Entsperrmaßnahme konnte nicht durchgeführt werden.", "Fotodokumentation erforderlich": "Bildnachweis zur Klärung notwendig.", "Nacharbeit erforderlich": "Weitere Maßnahme oder erneuter Termin erforderlich.", "Material fehlt": "Benötigtes Material nicht verfügbar.", "Terminabbruch": "Einsatz musste abgebrochen werden.", "Gefahr im Verzug": "Sicherheitsrelevanter Zustand festgestellt.", "Sonstiges / manuell": "Freitext verwenden und Sachverhalt beschreiben."};
+const STORE_KEY='MRP_ALLROUND_2026_V13';
+const MIGRATION_VERSION='2026-05-28-ALLROUND-112';
+let state = loadState();
+let currentPhotos = [];
+let selectedReports = new Set();
+
+function uid(){return 'MRP-'+Date.now().toString(36)+'-'+crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}
+function defaultState(){return {reports:[],calendar:[],tourPlans:[],tourSettings:{},monteurs:[{id:uid(),name:'Lorenzo Randazzo',phone:'',email:'',role:'Elektromeister / Abteilungsleiter'}],companies:[{id:uid(),name:'Lorenzo Randazzo',address:'',phone:'',email:'',logo:'',copyright:'Lorenzo Randazzo'}],operators:SEED_OPERATORS.map(n=>({id:uid(),name:n,type:'Strom/Gas/Netz',region:'Deutschland',note:''})),faults:[...SEED_FAULTS],activities:[...SEED_ACTIVITIES]}}
+function mergeSeeds(s){
+ if(!s || typeof s!=='object') s=defaultState();
+ s.reports=s.reports||[]; s.calendar=s.calendar||[]; s.monteurs=s.monteurs||[]; s.companies=s.companies||[]; s.tourPlans=s.tourPlans||[]; s.tourSettings=s.tourSettings||{};
+ s.operators=s.operators||[]; s.faults=s.faults||[]; s.activities=s.activities||[];
+ const opNames=new Set(s.operators.map(o=>String(o.name||'').toLowerCase().trim()));
+ SEED_OPERATORS.forEach(n=>{ if(!opNames.has(String(n).toLowerCase().trim())){ s.operators.push({id:uid(),name:n,type:'Strom/Gas/Netz',region:'Deutschland',note:'Startliste'}); opNames.add(String(n).toLowerCase().trim()) } });
+ const fSet=new Set(s.faults.map(x=>String(x).toLowerCase().trim()));
+ SEED_FAULTS.forEach(x=>{ if(!fSet.has(String(x).toLowerCase().trim())){s.faults.push(x);fSet.add(String(x).toLowerCase().trim())} });
+ const aSet=new Set(s.activities.map(x=>String(x).toLowerCase().trim()));
+ SEED_ACTIVITIES.forEach(x=>{ if(!aSet.has(String(x).toLowerCase().trim())){s.activities.push(x);aSet.add(String(x).toLowerCase().trim())} });
+ s.migrationVersion=MIGRATION_VERSION;
+ return s;
+}
+function loadState(){try{let s=JSON.parse(localStorage.getItem(STORE_KEY)||'null'); if(!s){s=defaultState()} s=mergeSeeds(s); localStorage.setItem(STORE_KEY,JSON.stringify(s)); return s}catch(e){let s=mergeSeeds(defaultState()); localStorage.setItem(STORE_KEY,JSON.stringify(s)); return s}}
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state)); const s=$('saveState'); if(s){s.textContent='gespeichert'; s.style.color='#86efac'}}
+function toast(t){let e=$('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2600)}
+function $(id){return document.getElementById(id)}
+function esc(s=''){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function toggleMenu(show){$('sidebar').classList.toggle('show',show);$('overlay').classList.toggle('show',show)}
+$('menuBtn').addEventListener('click',()=>toggleMenu(true));
+function nav(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');toggleMenu(false);render(); if(id==='tour')setTimeout(loadTourSettings,0); if(id==='calendar')setTimeout(renderCalendar,0)}
+function closeModal(){ $('modal').classList.remove('show'); $('modalInner').innerHTML=''; currentPhotos=[]}
+function openModal(html){$('modalInner').innerHTML=html;$('modal').classList.add('show')}
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+function filter(arr,q,fields){q=(q||'').toLowerCase();return q?arr.filter(x=>fields.some(f=>String(x[f]||'').toLowerCase().includes(q))):arr}
+function render(){
+ $('sReports').textContent=state.reports.length; $('sOpen').textContent=state.reports.filter(r=>r.status!=='Abgeschlossen').length; $('sMont').textContent=state.monteurs.length; $('sNetz').textContent=state.operators.length;
+ const recent=[...state.reports].slice(-5).reverse(); $('recent').innerHTML=recent.length?recent.map(r=>`<p><b>${esc(r.nr)}</b> · ${esc(r.customer||'Ohne Kunde')} · ${esc(r.date||'')}</p>`).join(''):'<p style="color:var(--muted)">Noch keine Rapporte vorhanden.</p>';
+ renderReports(); renderMonteurs(); renderCompanies(); renderOperators(); renderCatalogs(); renderTourPlan(); renderCalendar();
+}
+function reportCard(r){return `<div class="item"><input type="checkbox" ${selectedReports.has(r.id)?'checked':''} onchange="this.checked?selectedReports.add('${r.id}'):selectedReports.delete('${r.id}')"><div><h3>${esc(r.nr)} · ${esc(r.customer||'Ohne Kunde')}</h3><p>${esc(r.date||'')} · ${esc(r.type||'')} · ${esc(r.status||'Offen')}</p><p>${esc(r.address||'')} ${r.operator?'· '+esc(r.operator):''}</p><span class="pill">${(r.photos||[]).length} Fotos</span> <span class="pill">${(r.activities||[]).length} Tätigkeiten</span></div><div class="actions"><button class="btn small" onclick="editReport('${r.id}')">Bearbeiten</button><button class="btn small" onclick="printReports(['${r.id}'])">PDF</button><button class="btn small red" onclick="deleteReport('${r.id}')">Löschen</button></div></div>`}
+function renderReports(){let a=filter(state.reports,$('qReports')?.value,['nr','customer','address','operator','type','faultText','freeText']).slice().reverse();$('reportList').innerHTML=a.length?a.map(reportCard).join(''):'<div class="card">Keine Rapporte vorhanden.</div>'}
+function renderMonteurs(){let a=filter(state.monteurs,$('qMont')?.value,['name','role','email','phone']);$('monteurList').innerHTML=a.map(m=>`<div class="item"><div></div><div><h3>${esc(m.name)}</h3><p>${esc(m.role||'')} · ${esc(m.phone||'')}</p><p>${esc(m.email||'')}</p></div><div class="actions"><button class="btn small" onclick="editMonteur('${m.id}')">Bearbeiten</button><button class="btn small red" onclick="delObj('monteurs','${m.id}')">Löschen</button></div></div>`).join('')}
+function renderCompanies(){let a=filter(state.companies,$('qComp')?.value,['name','address','email','phone']);$('companyList').innerHTML=a.map(c=>`<div class="item"><div></div><div><h3>${esc(c.name)}</h3><p>${esc(c.address||'')}</p><p>${esc(c.phone||'')} ${esc(c.email||'')}</p></div><div class="actions"><button class="btn small" onclick="editCompany('${c.id}')">Bearbeiten</button><button class="btn small red" onclick="delObj('companies','${c.id}')">Löschen</button></div></div>`).join('')}
+function renderOperators(){let a=filter(state.operators,$('qOp')?.value,['name','type','region','note']);$('operatorList').innerHTML=a.slice(0,500).map(o=>`<div class="item"><div></div><div><h3>${esc(o.name)}</h3><p>${esc(o.type||'')} · ${esc(o.region||'')}</p><p>${esc(o.note||'')}</p></div><div class="actions"><button class="btn small" onclick="editOperator('${o.id}')">Bearbeiten</button><button class="btn small red" onclick="delObj('operators','${o.id}')">Löschen</button></div></div>`).join('') + (a.length>500?'<div class="card">Mehr als 500 Treffer. Bitte Suche verwenden.</div>':'')}
+function renderCatalogs(){ $('faultList').innerHTML=state.faults.map((x,i)=>`<p><button class="btn small red" onclick="state.faults.splice(${i},1);save();render()">×</button> ${esc(x)}</p>`).join(''); $('activityList').innerHTML=state.activities.map((x,i)=>`<p><button class="btn small red" onclick="state.activities.splice(${i},1);save();render()">×</button> ${esc(x)}</p>`).join('') }
+function delObj(list,id){if(confirm('Wirklich löschen?')){state[list]=state[list].filter(x=>x.id!==id);save();render()}}
+function deleteReport(id){if(confirm('Rapport löschen?')){state.reports=state.reports.filter(r=>r.id!==id);selectedReports.delete(id);save();render()}}
+function deleteSelectedReports(){let ids=[...selectedReports]; if(!ids.length)return toast('Keine Rapporte ausgewählt'); if(confirm(ids.length+' Rapporte löschen?')){state.reports=state.reports.filter(r=>!selectedReports.has(r.id));selectedReports.clear();save();render()}}
+function opts(arr,val,field='name'){return '<option value="">Bitte wählen</option>'+arr.map(x=>{let v=typeof x==='string'?x:x[field];return `<option ${v===val?'selected':''}>${esc(v)}</option>`}).join('')}
+function reportDefaults(){return {id:uid(),nr:'RAP-'+new Date().getFullYear()+'-'+String(state.reports.length+1).padStart(4,'0'),date:new Date().toISOString().slice(0,10),status:'Offen',type:'Entstörung iMSys/SMGW',company:state.companies[0]?.name||'',monteur:state.monteurs[0]?.name||'',customer:'',phone:'',address:'',customerNo:'',orderNo:'',operator:'',melo:'',meterOld:'',meterNew:'',gateway:'',faults:[],faultText:'',activities:[],freeText:'',material:'',notes:'',measurements:defaultMeasurements(),photos:[],signature:'',signatureCustomer:'',signatureMonteur:'',articles:[],electro:{installationType:'',systemType:'TN-C-S',protection:'',cableType:'',crossSection:'',circuit:'',breaker:'',rcd:'',measurementStandard:'DIN VDE 0100-600',inspectionResult:'',additional:''},createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}}
+function defaultMeasurements(){return ['Spannung L1-N|V','Spannung L2-N|V','Spannung L3-N|V','Spannung L1-L2|V','Spannung L2-L3|V','Spannung L1-L3|V','Drehfeld|','Frequenz|Hz','Vodafone Mobilfunkempfang|dBm','Telekom Mobilfunkempfang|dBm','Telefónica/O2 Mobilfunkempfang|dBm','WAN Signal allgemein|dBm','Schleifenimpedanz|Ω','RCD Auslösezeit|ms','Isolationswiderstand|MΩ','cos phi|'].map(x=>{let [name,unit]=x.split('|');return {name,value:'',unit,rate:''}})}
+function newReport(){try{editReport()}catch(e){alert('Neuer Rapport konnte nicht geöffnet werden: '+e.message);console.error(e)}}
+
+function activityCategory(a){
+ const s=String(a||'').toLowerCase();
+ if(s.includes('anfahrt')||s.includes('kunde')||s.includes('zugang')||s.includes('wechselbeleg')||s.includes('rapport')) return 'Organisation / Kunde';
+ if(s.includes('sicher')||s.includes('spannungsfreiheit')||s.includes('arbeitsstelle')) return 'Sicherheit';
+ if(s.includes('zähler')||s.includes('plomb')||s.includes('hak')||s.includes('sls')||s.includes('vorsicherung')) return 'Zählerplatz / Zähler';
+ if(s.includes('gateway')||s.includes('smgw')||s.includes('wan')||s.includes('han')||s.includes('lmn')||s.includes('cls')||s.includes('kommunikation')||s.includes('backend')||s.includes('antenne')) return 'Smart Meter / Kommunikation';
+ if(s.includes('mess')||s.includes('drehfeld')||s.includes('spannung')||s.includes('schleifen')||s.includes('rcd')||s.includes('isolation')) return 'Messen / Prüfen';
+ if(s.includes('wandler')||s.includes('prüfklemme')||s.includes('rlm')||s.includes('sim')||s.includes('modem')) return 'RLM / Wandler / Modem';
+ if(s.includes('foto')||s.includes('material')||s.includes('nacharbeit')||s.includes('weiterleitung')||s.includes('störung')) return 'Abschluss / Nacharbeit';
+ return 'Sonstiges';
+}
+
+function activitiesForType(type, selected=[]){
+ const preferred = TYPE_ACTIVITY_MAP[type] || state.activities;
+ const keep = new Set([...preferred, ...(selected||[])]);
+ return state.activities.filter(a=>keep.has(a));
+}
+function updateElectroVisibility(){
+ const type=$('r_type')?.value||'';
+ const sec=$('electroSection');
+ if(!sec)return;
+ const show = type==='Elektroinstallation' || type==='Multi Elektro Rapport';
+ sec.classList.toggle('hiddenSection', !show);
+}
+function updateActivityByType(){
+ const type=$('r_type')?.value||'';
+ const selected=selectedVals('act');
+ const box=$('activitySelectorMount');
+ if(!box)return;
+ box.innerHTML=renderActivitySelector(selected,type);
+ renderSelectedActivities();
+ updateFaultChoices();
+ updateElectroVisibility();
+ updateElectroVisibility();
+ const info=$('typeActivityInfo');
+ if(info) info.innerHTML='<b>Auftragstyp:</b> '+esc(type||'nicht gewählt')+'<br>Es werden nur die passenden Tätigkeiten angezeigt. Mehrfachauswahl ist möglich.';
+}
+function groupedActivities(list=null){
+ const source=list||state.activities;
+ const order=['Organisation / Kunde','Sicherheit','Zählerplatz / Zähler','Smart Meter / Kommunikation','Messen / Prüfen','RLM / Wandler / Modem','Abschluss / Nacharbeit','Sonstiges'];
+ const g={}; order.forEach(x=>g[x]=[]);
+ source.forEach(a=>{const c=activityCategory(a); if(!g[c])g[c]=[]; g[c].push(a)});
+ return order.filter(c=>g[c]&&g[c].length).map(c=>({name:c,items:g[c]}));
+}
+
+function descForActivity(a){return ACTIVITY_DESCRIPTIONS[a] || 'Tätigkeit auswählen, wenn diese vor Ort tatsächlich durchgeführt oder geprüft wurde.'}
+function descForFault(f){return FAULT_DESCRIPTIONS[f] || 'Störungsbild auswählen, wenn es zum festgestellten Sachverhalt passt. Ergänzungen können im Freitext eingetragen werden.'}
+function renderActivitySelector(selected=[],type=''){
+ const groups=groupedActivities(activitiesForType(type, selected));
+ return `<div class="activityPanel">
+   <div class="typeInfo" id="typeActivityInfo"><b>Auftragstyp:</b> ${esc(type||'nicht gewählt')}<br>Es werden nur die passenden Tätigkeiten angezeigt. Mehrfachauswahl ist möglich.</div><input id="activitySearch" class="activitySearch" placeholder="Tätigkeit suchen..." oninput="filterActivityUI()">
+   <div class="quickRow">
+     <button type="button" class="btn small" onclick="selectActivityPreset('smart')">Smart Meter Standard</button>
+     <button type="button" class="btn small" onclick="selectActivityPreset('zaehler')">Zählertausch Standard</button>
+     <button type="button" class="btn small" onclick="selectActivityPreset('pruefung')">Prüfung Standard</button>
+     <button type="button" class="btn small red" onclick="clearActivities()">Auswahl leeren</button>
+   </div>
+   <div class="activityTabs" id="activityTabs">
+     <button type="button" class="activityTab active" onclick="setActivityCategory('Alle',this)">Alle</button>
+     ${groups.map(g=>`<button type="button" class="activityTab" onclick="setActivityCategory('${esc(g.name)}',this)">${esc(g.name)}</button>`).join('')}
+   </div>
+   <div id="activitySelectedBar" class="activitySelectedBar"></div>
+   <div class="activityGroups" id="activityGroups">
+     ${groups.map(g=>`<details class="activityGroup" open data-cat="${esc(g.name)}"><summary><span>${esc(g.name)}</span><span>${g.items.length}</span></summary><div class="activityGroupBody checkgrid">${g.items.map(a=>`<label class="check activityItem bigTouch" data-text="${esc((a+' '+descForActivity(a)).toLowerCase())}"><input type="checkbox" name="act" value="${esc(a)}" ${selected.includes(a)?'checked':''} onchange="activityChanged()"><span><strong>${esc(a)}</strong><span class="desc">${esc(descForActivity(a))}</span></span></label>`).join('')}</div></details>`).join('')}
+   </div>
+ </div>`;
+}
+function activityChanged(){renderSelectedActivities();updateFaultChoices()}
+function renderSelectedActivities(){
+ const acts=selectedVals('act');
+ const bar=$('activitySelectedBar'); if(!bar)return;
+ bar.innerHTML=acts.length?('<b>Ausgewählt:</b><br>'+acts.map(a=>`<span class="chip">${esc(a)} <button type="button" onclick="uncheckActivity('${esc(a)}')">×</button></span>`).join('')):'Noch keine Tätigkeit ausgewählt.';
+}
+function uncheckActivity(v){document.querySelectorAll('input[name=act]').forEach(i=>{if(i.value===v)i.checked=false});activityChanged()}
+function clearActivities(){document.querySelectorAll('input[name=act]').forEach(i=>i.checked=false);activityChanged()}
+function setActivityCategory(cat,btn){
+ document.querySelectorAll('.activityTab').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+ document.querySelectorAll('.activityGroup').forEach(g=>{g.style.display=(cat==='Alle'||g.dataset.cat===cat)?'block':'none'});
+}
+function filterActivityUI(){
+ const q=($('activitySearch')?.value||'').toLowerCase();
+ document.querySelectorAll('.activityItem').forEach(el=>{el.style.display=el.dataset.text.includes(q)?'flex':'none'});
+ document.querySelectorAll('.activityGroup').forEach(g=>{const any=[...g.querySelectorAll('.activityItem')].some(i=>i.style.display!=='none'); if(q)g.style.display=any?'block':'none'});
+}
+function selectActivityPreset(type){
+ const sets={
+  smart:['Anfahrt durchgeführt','Kunde informiert','Zugang geprüft','Arbeitsstelle gesichert','5 Sicherheitsregeln beachtet','Gateway montiert','SMGW parametriert','WAN geprüft','LMN geprüft','Kommunikationsstrecke geprüft','Backend-Erreichbarkeit geprüft','Messwerte geprüft','Foto vor Arbeit erstellt','Foto nach Arbeit erstellt','Rapport abgeschlossen'],
+  zaehler:['Anfahrt durchgeführt','Kunde informiert','Zugang geprüft','Arbeitsstelle gesichert','5 Sicherheitsregeln beachtet','Spannungsfreiheit festgestellt','Zählerplatz geprüft','Plomben kontrolliert','Zähler alt ausgebaut','Zähler neu eingebaut','Zählerstände dokumentiert','Drehfeld geprüft','Spannungen gemessen','Wechselbeleg erstellt','Foto vor Arbeit erstellt','Foto nach Arbeit erstellt','Rapport abgeschlossen'],
+  pruefung:['Anfahrt durchgeführt','Zugang geprüft','Arbeitsstelle gesichert','5 Sicherheitsregeln beachtet','Spannungsfreiheit festgestellt','Zählerplatz geprüft','Drehfeld geprüft','Spannungen gemessen','Schleifenimpedanz gemessen','RCD geprüft','Isolationsmessung durchgeführt','Messwerte geprüft','Foto nach Arbeit erstellt','Rapport abgeschlossen']
+ };
+ const wanted=new Set(sets[type]||[]);
+ document.querySelectorAll('input[name=act]').forEach(i=>{if(wanted.has(i.value))i.checked=true});
+ activityChanged();
+}
+function getRelevantFaults(activities){
+ const set=new Set();
+ (activities||[]).forEach(a=>(ACTIVITY_FAULT_MAP[a]||[]).forEach(f=>set.add(f)));
+ if(!set.size) return [];
+ return [...set].filter(f=>state.faults.includes(f));
+}
+function updateFaultChoices(){
+ const acts=selectedVals('act');
+ const box=$('faultChoiceBox');
+ const info=$('selectedActivityInfo');
+ if(!box)return;
+ info.innerHTML=acts.length?'<b>Ausgewählte Tätigkeiten:</b><br>'+acts.map(x=>'✓ '+esc(x)).join('<br>'):'Bitte zuerst eine oder mehrere Tätigkeiten auswählen. Danach erscheinen nur die passenden Störungsbilder.';
+ const relevant=getRelevantFaults(acts);
+ const oldChecked=new Set(selectedVals('fault'));
+ if(!acts.length){
+   box.className='faultBox empty';
+   box.innerHTML='Noch keine Tätigkeit ausgewählt.';
+   return;
+ }
+ box.className='faultBox';
+ box.innerHTML=relevant.length?`<div class="checkgrid">${relevant.map(f=>`<label class="check bigTouch"><input type="checkbox" name="fault" value="${esc(f)}" ${oldChecked.has(f)?'checked':''}><span><strong>${esc(f)}</strong><span class="desc">${esc(descForFault(f))}</span></span></label>`).join('')}</div>`:'<div style="color:#6b7280">Für diese Tätigkeit sind noch keine festen Störungsbilder hinterlegt. Bitte manuell eintragen.</div>';
+}
+
+let currentArticles = [];
+let activeSignatureTarget = null;
+function defaultElectro(e){
+ return Object.assign({installationType:'',systemType:'TN-C-S',protection:'',cableType:'',crossSection:'',circuit:'',breaker:'',rcd:'',measurementStandard:'DIN VDE 0100-600',inspectionResult:'',additional:''}, e||{});
+}
+function renderArticleRows(){
+ const b=$('articleRows'); if(!b)return;
+ b.innerHTML=currentArticles.map((a,i)=>`<tr>
+ <td><input value="${esc(a.articleNo||'')}" oninput="currentArticles[${i}].articleNo=this.value"></td>
+ <td><input value="${esc(a.name||'')}" oninput="currentArticles[${i}].name=this.value"></td>
+ <td><input type="number" min="0" step="0.01" value="${esc(a.qty||'')}" oninput="currentArticles[${i}].qty=this.value"></td>
+ <td><input value="${esc(a.unit||'Stk')}" oninput="currentArticles[${i}].unit=this.value"></td>
+ <td>${a.image?`<img class="articleThumb" src="${a.image}">`:''}<label class="btn small">Bild<input type="file" accept="image/*" hidden onchange="addArticleImage(event,${i})"></label></td>
+ <td><button class="btn small red" onclick="currentArticles.splice(${i},1);renderArticleRows()">×</button></td>
+ </tr>`).join('');
+}
+function addArticleRow(){currentArticles.push({id:uid(),articleNo:'',name:'',qty:'1',unit:'Stk',image:''});renderArticleRows()}
+async function addArticleImage(e,i){const f=e.target.files[0]; if(!f)return; try{currentArticles[i].image=await compressImage(f);renderArticleRows()}catch(err){toast('Artikelbild konnte nicht geladen werden')} e.target.value=''}
+function openSignature(target){
+ activeSignatureTarget=target;
+ openModal(`<div class="docForm"><div class="docHead"><div class="docLogo"><div class="logo">LR</div><div><h2>Unterschrift erfassen</h2><div class="docSub">${target==='customer'?'Kunde / Auftraggeber':'Monteur / Ausführender'}</div></div></div></div>
+ <canvas id="sigCanvas" class="signaturePad"></canvas>
+ <div class="toolbar"><button class="btn red" onclick="clearSignaturePad()">Löschen</button><button class="btn green" onclick="saveSignaturePad()">Übernehmen</button><button class="btn" onclick="closeSignatureOnly()">Abbrechen</button></div></div>`);
+ initSignatureCanvas();
+}
+function initSignatureCanvas(){
+ const c=$('sigCanvas'); if(!c)return; const ctx=c.getContext('2d'); let drawing=false;
+ function resize(){const r=c.getBoundingClientRect(); const old=c.toDataURL(); c.width=Math.max(400,Math.floor(r.width*2)); c.height=300; ctx.lineWidth=4; ctx.lineCap='round'; ctx.strokeStyle='#111827'}
+ resize();
+ const pos=e=>{const r=c.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*(c.width/r.width), y:(t.clientY-r.top)*(c.height/r.height)}}
+ const start=e=>{drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); e.preventDefault()}
+ const move=e=>{if(!drawing)return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); e.preventDefault()}
+ const end=()=>drawing=false;
+ c.addEventListener('mousedown',start); c.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+ c.addEventListener('touchstart',start,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',end);
+}
+function clearSignaturePad(){const c=$('sigCanvas'); if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
+function saveSignaturePad(){const c=$('sigCanvas'); if(!c||!currentEditingReport)return; const data=c.toDataURL('image/png'); if(activeSignatureTarget==='customer')currentEditingReport.signatureCustomer=data; else currentEditingReport.signatureMonteur=data; closeModal(); editReport(currentEditingReport.id)}
+function closeSignatureOnly(){closeModal(); if(currentEditingReport)editReport(currentEditingReport.id)}
+let currentEditingReport = null;
+function editReport(id){
+ const r=id?state.reports.find(x=>x.id===id):reportDefaults(); currentEditingReport=r; currentPhotos=[...(r.photos||[])]; currentArticles=[...(r.articles||[])]; r.electro=defaultElectro(r.electro);
+ openModal(`<div class="docForm"><div class="docHead"><div class="docLogo"><div class="logo">LR</div><div><h2>Monteur Rapport Pro</h2><div class="docSub">Rapportbearbeitung im späteren Druckaufbau · © Lorenzo Randazzo</div></div></div><div><b>${esc(r.nr)}</b><br><small>${esc(r.date||'')}</small></div></div>
+ <div id="formAlert" class="formAlert"></div><div class="lockNote">Pflichtfelder werden rot markiert. Speichern und Drucken sind gesperrt, solange wichtige Angaben fehlen.</div><h3>1. Stammdaten</h3>
+ <div class="row3"><div class="field"><label>Rapport Nr.</label><input id="r_nr" value="${esc(r.nr)}"></div><div class="field"><label>Datum</label><input id="r_date" type="date" value="${esc(r.date)}"></div><div class="field"><label>Status</label><select id="r_status">${opts(['Offen','In Bearbeitung','Abgeschlossen','Nacharbeit','Abgebrochen'],r.status)}</select></div></div>
+ <div class="row3"><div class="field"><label>Firma</label><select id="r_company">${opts(state.companies,r.company)}</select></div><div class="field"><label>Monteur</label><select id="r_monteur">${opts(state.monteurs,r.monteur)}</select></div><div class="field"><label>Auftragstyp</label><select id="r_type" onchange="updateActivityByType()">${opts(['Entstörung iMSys/SMGW','Zählertausch','Sperrung','Entsperrung','RLM/Wandlermessung','Zählerplatzprüfung','AuS Tätigkeit','Inbetriebnahme','Wartung','Elektroinstallation','Multi Elektro Rapport','Sonstiges'],r.type)}</select></div></div>
+ <div class="row"><div class="field"><label>Kunde / Objekt</label><input id="r_customer" value="${esc(r.customer)}"></div><div class="field"><label>Telefon</label><input id="r_phone" value="${esc(r.phone)}"></div></div>
+ <div class="field"><label>Adresse</label><input id="r_address" value="${esc(r.address)}"></div>
+ <div class="row3"><div class="field"><label>Kundennr.</label><input id="r_customerNo" value="${esc(r.customerNo)}"></div><div class="field"><label>Auftragsnr.</label><input id="r_orderNo" value="${esc(r.orderNo)}"></div><div class="field operatorSearchBox"><label>Netzbetreiber suchen / auswählen</label><input id="r_operator" list="operatorListData" value="${esc(r.operator)}" placeholder="Netzbetreiber tippen oder auswählen"><datalist id="operatorListData">${state.operators.map(o=>`<option value="${esc(o.name)}"></option>`).join("")}</datalist><div class="operatorHint">Du kannst suchen, auswählen oder einen neuen Netzbetreiber manuell eintippen.</div></div></div>
+ <div class="row3"><div class="field"><label>MeLo-ID</label><input id="r_melo" value="${esc(r.melo)}"></div><div class="field"><label>Zähler alt</label><input id="r_meterOld" value="${esc(r.meterOld)}"></div><div class="field"><label>Zähler neu</label><input id="r_meterNew" value="${esc(r.meterNew)}"></div></div>
+ <div class="field"><label>Gateway / Kommunikationsgerät</label><input id="r_gateway" value="${esc(r.gateway)}"></div>
+ <h3>2. Tätigkeiten auswählen</h3>
+ <div class="selectedInfo" id="selectedActivityInfo">Bitte Tätigkeit auswählen.</div>
+ <div class="field"><label>Übersichtliche Tätigkeitsauswahl passend zum Auftragstyp</label><div id="activitySelectorMount">${renderActivitySelector(r.activities||[],r.type)}</div></div>
+ <h3>3. Passende Störungsbilder</h3>
+ <div class="field"><label>Die Liste richtet sich nach den ausgewählten Tätigkeiten</label><div id="faultChoiceBox" class="faultBox"></div></div>
+ <div class="field"><label>Manuelles Störungsbild / freie Ergänzung</label><textarea id="r_faultText">${esc(r.faultText)}</textarea></div>
+ <h3>4. Arbeitsbericht</h3>
+ <div class="field"><label>Freitext / detaillierter Arbeitsbericht</label><textarea id="r_freeText">${esc(r.freeText)}</textarea></div>
+ <div class="field"><label>Material</label><textarea id="r_material">${esc(r.material)}</textarea></div>
+ <div class="field"><label>Notizen</label><textarea id="r_notes">${esc(r.notes)}</textarea></div>
+ <h3>5. Messwerte</h3><div id="measureBox">${measurementInputs(r.measurements||defaultMeasurements())}</div><button class="btn small" onclick="addMeasureRow()">+ Messwert</button>
+ <div id="electroSection" class="hiddenSection"><h3>6. Elektroinstallation / Multi Elektro Rapport</h3>
+ <div class="multiBox">
+ <div class="row3"><div class="field"><label>Installationsart</label><select id="e_installationType">${opts(['Neuinstallation','Erweiterung','Änderung','Instandsetzung','Prüfung','Fehlersuche','Zählerschrank / Verteiler','PV / Wallbox / Wärmepumpe','Sonstiges'],r.electro.installationType)}</select></div><div class="field"><label>Netzform</label><select id="e_systemType">${opts(['TN-C','TN-S','TN-C-S','TT','IT','Unbekannt'],r.electro.systemType)}</select></div><div class="field"><label>Schutzmaßnahme</label><input id="e_protection" value="${esc(r.electro.protection)}" placeholder="z.B. ADS, RCD, Schutzisolierung"></div></div>
+ <div class="row3"><div class="field"><label>Leitung/Kabel</label><input id="e_cableType" value="${esc(r.electro.cableType)}" placeholder="z.B. NYM-J, NAYY, H07RN-F"></div><div class="field"><label>Querschnitt</label><input id="e_crossSection" value="${esc(r.electro.crossSection)}" placeholder="z.B. 5x10 mm²"></div><div class="field"><label>Stromkreis</label><input id="e_circuit" value="${esc(r.electro.circuit)}"></div></div>
+ <div class="row3"><div class="field"><label>Absicherung</label><input id="e_breaker" value="${esc(r.electro.breaker)}" placeholder="z.B. B16A, C32A"></div><div class="field"><label>RCD/FI</label><input id="e_rcd" value="${esc(r.electro.rcd)}" placeholder="z.B. Typ A 30 mA"></div><div class="field"><label>Prüfgrundlage</label><input id="e_measurementStandard" value="${esc(r.electro.measurementStandard)}"></div></div>
+ <div class="field"><label>Prüfergebnis / Bewertung</label><textarea id="e_inspectionResult">${esc(r.electro.inspectionResult)}</textarea></div>
+ <div class="field"><label>Weitere Elektro-Details</label><textarea id="e_additional">${esc(r.electro.additional)}</textarea></div>
+ </div></div>
+ <h3>7. Artikel / Materialpositionen</h3>
+ <div class="toolbar"><button class="btn gold" onclick="addArticleRow()">+ Artikel hinzufügen</button></div>
+ <table class="articleTable"><thead><tr><th>Artikelnummer</th><th>Bezeichnung</th><th>Menge</th><th>Einheit</th><th>Bild</th><th></th></tr></thead><tbody id="articleRows"></tbody></table>
+ <h3>8. Unterschriften</h3>
+ <div class="row"><div class="field"><label>Kunde / Auftraggeber</label><button class="btn gold" onclick="saveReport('${r.id}',false,true,'customer')">Unterschrift Kunde erfassen</button><div id="sigCustomerBox">${r.signatureCustomer?`<img class="sigPreview" src="${r.signatureCustomer}">`:'Noch keine Unterschrift'}</div></div><div class="field"><label>Monteur / Ausführender</label><button class="btn gold" onclick="saveReport('${r.id}',false,true,'monteur')">Unterschrift Monteur erfassen</button><div id="sigMonteurBox">${r.signatureMonteur?`<img class="sigPreview" src="${r.signatureMonteur}">`:'Noch keine Unterschrift'}</div></div></div>
+ <h3>9. Fotos</h3><div class="mobileFileHint">Mobil: „Fotomediathek“ nutzt vorhandene Bilder, „Kamera öffnen“ startet direkt die Kamera. Bei iPhone bitte Zugriff erlauben.</div><div class="toolbar"><label class="btn gold">Fotomediathek<input type="file" accept="image/*" multiple hidden onchange="addPhotos(event)"></label><label class="btn">Kamera öffnen<input type="file" accept="image/*" capture="environment" hidden onchange="addPhotos(event)"></label></div><div id="photoBox" class="photoGrid"></div>
+ <div class="toolbar"><button class="btn green" onclick="saveReport('${r.id}')">Speichern</button><button class="btn" onclick="saveReport('${r.id}',true)">Speichern & PDF</button><button class="btn" onclick="closeModal()">Abbrechen</button></div></div>`);
+ renderPhotos();
+ renderArticleRows();
+ renderSelectedActivities();
+ updateFaultChoices();
+ // restore faults that might have been saved but are not currently relevant
+ (r.faults||[]).forEach(f=>{const inp=[...document.querySelectorAll('input[name=fault]')].find(x=>x.value===f); if(inp) inp.checked=true;});
+}
+function measurementInputs(ms){return `<table class="valueTable"><thead><tr><th>Messpunkt</th><th>Wert</th><th>Einheit</th><th>Bewertung / Hinweis</th></tr></thead><tbody>${ms.map((m,i)=>`<tr class="measure"><td><input value="${esc(m.name)}" placeholder="Messpunkt"></td><td><input value="${esc(m.value)}" placeholder="Wert"></td><td><input value="${esc(m.unit)}" placeholder="Einheit"></td><td><input value="${esc(m.rate)}" placeholder="Bewertung"></td></tr>`).join('')}</tbody></table>`}
+function addMeasureRow(){const body=document.querySelector('#measureBox tbody'); if(body){body.insertAdjacentHTML('beforeend',`<tr class="measure"><td><input placeholder="Messpunkt"></td><td><input placeholder="Wert"></td><td><input placeholder="Einheit"></td><td><input placeholder="Bewertung"></td></tr>`)}else{document.getElementById('measureBox').insertAdjacentHTML('beforeend',measurementInputs([{name:'',value:'',unit:'',rate:''}]))}}
+function collectMeasurements(){return [...document.querySelectorAll('#measureBox .measure')].map(row=>{let i=row.querySelectorAll('input');return {name:i[0].value,value:i[1].value,unit:i[2].value,rate:i[3].value}}).filter(m=>m.name||m.value)}
+function selectedVals(name){return [...document.querySelectorAll(`input[name=${name}]:checked`)].map(x=>x.value)}
+async function addPhotos(e){const files=[...e.target.files]; for(const f of files){try{currentPhotos.push({id:uid(),name:f.name,data:await compressImage(f),date:new Date().toISOString()})}catch(err){toast('Foto konnte nicht geladen werden: '+f.name)}} renderPhotos(); e.target.value=''}
+function compressImage(file){return new Promise((res,rej)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{let max=1400, w=img.width,h=img.height; if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>max){w=Math.round(w*max/h);h=max}let c=document.createElement('canvas');c.width=w;c.height=h;let ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',.78))};img.onerror=()=>rej(Error('Bildformat nicht unterstützt'));img.src=reader.result};reader.onerror=rej;reader.readAsDataURL(file)})}
+function renderPhotos(){const b=$('photoBox'); if(!b)return; b.innerHTML=currentPhotos.map((p,i)=>`<div class="photo"><img src="${p.data}"><button onclick="currentPhotos.splice(${i},1);renderPhotos()">Entfernen</button></div>`).join('')}
+
+function clearFieldErrors(){
+ document.querySelectorAll('.errorField').forEach(x=>x.classList.remove('errorField'));
+ document.querySelectorAll('.errorMsg').forEach(x=>x.remove());
+ const alert=$('formAlert'); if(alert){alert.classList.remove('show');alert.innerHTML=''}
+ const bar=$('activitySelectedBar'); if(bar){bar.style.border='';bar.style.background=''}
+}
+function markField(id,msg){
+ const el=$(id); if(!el)return;
+ const box=el.closest('.field')||el.parentElement;
+ box.classList.add('errorField');
+ if(!box.querySelector('.errorMsg')) box.insertAdjacentHTML('beforeend',`<div class="errorMsg">${esc(msg)}</div>`);
+}
+function showFormAlert(lines){
+ const alert=$('formAlert'); if(!alert)return;
+ alert.innerHTML='Bitte korrigieren:<br>- '+lines.map(esc).join('<br>- ');
+ alert.classList.add('show');
+ alert.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function reportValidationDraft(){
+ clearFieldErrors();
+ const missing=[];
+ const warnings=[];
+ const requireVal=(id,label)=>{const el=$(id); if(!el || !String(el.value||'').trim()){missing.push(label);markField(id,label+' fehlt')}};
+ requireVal('r_date','Datum');
+ requireVal('r_type','Auftragstyp');
+ requireVal('r_customer','Kunde / Objekt');
+ requireVal('r_monteur','Monteur');
+ if(!selectedVals('act').length){
+   missing.push('mindestens eine Tätigkeit');
+   const bar=$('activitySelectedBar'); if(bar){bar.style.border='2px solid #dc2626';bar.style.background='#fee2e2'}
+ }
+ if(!String($('r_address')?.value||'').trim() && !String($('r_orderNo')?.value||'').trim()) warnings.push('Adresse oder Auftragsnummer fehlt.');
+ if(!selectedVals('fault').length && !String($('r_faultText')?.value||'').trim()) warnings.push('Kein Störungsbild ausgewählt oder manuell eingetragen.');
+ if(!String($('r_freeText')?.value||'').trim()) warnings.push('Freitext / Arbeitsbericht ist leer.');
+ if(missing.length) showFormAlert(missing);
+ return {missing,warnings};
+}
+function confirmBeforeSaveOrPrint(mode='speichern'){
+ const v=reportValidationDraft();
+ if(v.missing.length){
+   alert('Bitte Pflichtangaben ergänzen:\\n\\n- '+v.missing.join('\\n- '));
+   return false;
+ }
+ let msg='Bitte vor dem '+mode+' bestätigen:\\n\\n';
+ msg+='Alle Angaben wurden nach bestem Wissen ordnungsgemäß, vollständig und nachvollziehbar gemacht.\\n';
+ msg+='Datenschutz-Hinweis: Personenbezogene Daten, Kundendaten, Fotos, Zählernummern und technische Daten dürfen nur zweckgebunden verarbeitet und weitergegeben werden.\\n';
+ if(v.warnings.length) msg+='\\nHinweise:\\n- '+v.warnings.join('\\n- ')+'\\n';
+ msg+='\\nFortfahren?';
+ return confirm(msg);
+}
+function validateStoredReportForPrint(r){
+ const miss=[];
+ if(!r.date)miss.push('Datum');
+ if(!r.type)miss.push('Auftragstyp');
+ if(!r.customer)miss.push('Kunde / Objekt');
+ if(!r.monteur)miss.push('Monteur');
+ if(!(r.activities||[]).length)miss.push('Tätigkeit');
+ return miss;
+}
+function confirmBeforePrintReports(reps){
+ let missing=[];
+ reps.forEach(r=>{const m=validateStoredReportForPrint(r); if(m.length)missing.push((r.nr||'Rapport')+': '+m.join(', '))});
+ let msg='Bitte vor dem Drucken/PDF bestätigen:\\n\\nAlle Angaben wurden ordnungsgemäß geprüft.\\nDatenschutz-Hinweis: Der Ausdruck kann personenbezogene Daten, Fotos, Zählernummern und technische Daten enthalten und muss vertraulich behandelt werden.';
+ if(missing.length) msg+='\\n\\nUnvollständige Rapporte:\\n- '+missing.join('\\n- ');
+ msg+='\\n\\nFortfahren?';
+ return confirm(msg);
+}
+function saveReport(id,printAfter=false,openSig=false,sigTarget=null){let i=state.reports.findIndex(x=>x.id===id); let old=i>=0?state.reports[i]:reportDefaults(); let r={...old,
+nr:$('r_nr').value,date:$('r_date').value,status:$('r_status').value,type:$('r_type').value,company:$('r_company').value,monteur:$('r_monteur').value,customer:$('r_customer').value,phone:$('r_phone').value,address:$('r_address').value,customerNo:$('r_customerNo').value,orderNo:$('r_orderNo').value,operator:$('r_operator').value,melo:$('r_melo').value,meterOld:$('r_meterOld').value,meterNew:$('r_meterNew').value,gateway:$('r_gateway').value,faults:selectedVals('fault'),faultText:$('r_faultText').value,activities:selectedVals('act'),freeText:$('r_freeText').value,material:$('r_material').value,notes:$('r_notes').value,measurements:collectMeasurements(),photos:currentPhotos,articles:currentArticles,electro:{installationType:$('e_installationType')?.value||'',systemType:$('e_systemType')?.value||'',protection:$('e_protection')?.value||'',cableType:$('e_cableType')?.value||'',crossSection:$('e_crossSection')?.value||'',circuit:$('e_circuit')?.value||'',breaker:$('e_breaker')?.value||'',rcd:$('e_rcd')?.value||'',measurementStandard:$('e_measurementStandard')?.value||'',inspectionResult:$('e_inspectionResult')?.value||'',additional:$('e_additional')?.value||''},signatureCustomer:old.signatureCustomer||'',signatureMonteur:old.signatureMonteur||'',updatedAt:new Date().toISOString()};
+ if(!openSig && !confirmBeforeSaveOrPrint(printAfter?'Speichern und Drucken':'Speichern'))return; if(i>=0)state.reports[i]=r; else state.reports.push(r); save(); currentEditingReport=r; if(openSig){openSignature(sigTarget);return} closeModal(); render(); toast('Rapport gespeichert'); if(printAfter)printReports([r.id],true)}
+function editMonteur(id){let m=id?state.monteurs.find(x=>x.id===id):{id:uid(),name:'',phone:'',email:'',role:''};openModal(`<h2>Monteur</h2><div class="field"><label>Name</label><input id="m_name" value="${esc(m.name)}"></div><div class="row"><div class="field"><label>Telefon</label><input id="m_phone" value="${esc(m.phone)}"></div><div class="field"><label>E-Mail</label><input id="m_email" value="${esc(m.email)}"></div></div><div class="field"><label>Rolle / Qualifikation</label><input id="m_role" value="${esc(m.role)}"></div><button class="btn green" onclick="saveMonteur('${m.id}')">Speichern</button>`)}
+function saveMonteur(id){let o={id,name:$('m_name').value,phone:$('m_phone').value,email:$('m_email').value,role:$('m_role').value};let i=state.monteurs.findIndex(x=>x.id===id); if(i>=0)state.monteurs[i]=o; else state.monteurs.push(o);save();closeModal();render()}
+function editCompany(id){let c=id?state.companies.find(x=>x.id===id):{id:uid(),name:'',address:'',phone:'',email:'',logo:'',copyright:'Lorenzo Randazzo'};openModal(`<h2>Firma</h2><div class="field"><label>Firmenname</label><input id="c_name" value="${esc(c.name)}"></div><div class="field"><label>Adresse</label><input id="c_address" value="${esc(c.address)}"></div><div class="row"><div class="field"><label>Telefon</label><input id="c_phone" value="${esc(c.phone)}"></div><div class="field"><label>E-Mail</label><input id="c_email" value="${esc(c.email)}"></div></div><div class="field"><label>Copyright/Urheberrecht</label><input id="c_copy" value="${esc(c.copyright||'Lorenzo Randazzo')}"></div><button class="btn green" onclick="saveCompany('${c.id}')">Speichern</button>`)}
+function saveCompany(id){let o={id,name:$('c_name').value,address:$('c_address').value,phone:$('c_phone').value,email:$('c_email').value,copyright:$('c_copy').value};let i=state.companies.findIndex(x=>x.id===id); if(i>=0)state.companies[i]=o; else state.companies.push(o);save();closeModal();render()}
+function editOperator(id){let o=id?state.operators.find(x=>x.id===id):{id:uid(),name:'',type:'',region:'',note:''};openModal(`<h2>Netzbetreiber</h2><div class="field"><label>Name</label><input id="o_name" value="${esc(o.name)}"></div><div class="row"><div class="field"><label>Sparte/Typ</label><input id="o_type" value="${esc(o.type)}"></div><div class="field"><label>Region</label><input id="o_region" value="${esc(o.region)}"></div></div><div class="field"><label>Notiz</label><textarea id="o_note">${esc(o.note)}</textarea></div><button class="btn green" onclick="saveOperator('${o.id}')">Speichern</button>`)}
+function saveOperator(id){let o={id,name:$('o_name').value,type:$('o_type').value,region:$('o_region').value,note:$('o_note').value};let i=state.operators.findIndex(x=>x.id===id); if(i>=0)state.operators[i]=o; else state.operators.push(o);save();closeModal();render()}
+function addFault(){let v=prompt('Neues Störungsbild'); if(v){state.faults.push(v);save();render()}}
+function addActivity(){let v=prompt('Neue Tätigkeit'); if(v){state.activities.push(v);save();render()}}
+function importExcelClick(){ $('excelFile').click() }
+
+function normKey(k){return String(k||'').toLowerCase().replace(/\s+/g,' ').trim()}
+function rowText(row){return Object.values(row).map(v=>String(v||'')).join(' | ')}
+function smartGet(row,keys){
+ const entries=Object.entries(row);
+ for(const [k,v] of entries){
+   const nk=normKey(k);
+   if(keys.some(s=>nk.includes(String(s).toLowerCase()))) return v;
+ }
+ return '';
+}
+function inferTypeFromText(txt){
+ const t=txt.toLowerCase();
+ if(t.includes('imsy')||t.includes('imsys')||t.includes('smgw')||t.includes('gateway')||t.includes('gwa')||t.includes('kommunikationsstörung')) return 'Entstörung iMSys/SMGW';
+ if(t.includes('sperr')) return t.includes('entsperr')?'Entsperrung':'Sperrung';
+ if(t.includes('zählertausch')||t.includes('zaehlertausch')||t.includes('wechsel')||t.includes('zählerwechsel')) return 'Zählertausch';
+ if(t.includes('rlm')||t.includes('wandler')) return 'RLM/Wandlermessung';
+ if(t.includes('zählerplatz')||t.includes('zaehlerplatz')) return 'Zählerplatzprüfung';
+ if(t.includes('elektroinstallation')||t.includes('installation')) return 'Elektroinstallation';
+ return 'Entstörung iMSys/SMGW';
+}
+function autoActivitiesForImport(type,txt){
+ const t=txt.toLowerCase();
+ const base=(TYPE_ACTIVITY_MAP[type]||[]).slice(0,8);
+ const add=[];
+ if(t.includes('foto')) add.push('Foto vor Arbeit erstellt','Foto nach Arbeit erstellt');
+ if(t.includes('gateway')||t.includes('smgw')) add.push('Gateway neu gestartet','Kommunikationsstrecke geprüft','Backend-Erreichbarkeit geprüft');
+ if(t.includes('zähler')||t.includes('zaehler')) add.push('Zählerplatz geprüft','Zählerstände dokumentiert');
+ if(t.includes('wan')||t.includes('lte')||t.includes('mobilfunk')) add.push('WAN geprüft','Antenne montiert/geprüft');
+ return [...new Set([...base,...add])].filter(x=>state.activities.includes(x));
+}
+function autoFaultsForImport(type,txt){
+ const t=txt.toLowerCase();
+ const f=[];
+ if(t.includes('kommunikationsstörung')||t.includes('nicht erreichbar')) f.push('Kommunikationsstörung lt. GWA / SMGW nicht erreichbar');
+ if(t.includes('offline')) f.push('SMGW offline');
+ if(t.includes('wan')) f.push('WAN gestört / keine Verbindung');
+ if(t.includes('lte')||t.includes('mobilfunk')||t.includes('empfang')) f.push('LTE/450 MHz Empfang schlecht');
+ if(t.includes('gateway')) f.push('Gateway Neustart erforderlich');
+ if(t.includes('zähler')||t.includes('zaehler')) f.push('Zähler wird vom Gateway nicht erkannt');
+ if(t.includes('kunde nicht')||t.includes('nicht angetroffen')) f.push('Kunde nicht angetroffen');
+ if(t.includes('verweigert')) f.push('Arbeit verweigert');
+ return [...new Set(f)].filter(x=>state.faults.includes(x));
+}
+function ensureOperatorExists(name){
+ name=String(name||'').trim();
+ if(!name)return '';
+ if(!state.operators.some(o=>String(o.name).toLowerCase()===name.toLowerCase())){
+   state.operators.push({id:uid(),name,type:'Import',region:'',note:'Aus Excel importiert'});
+ }
+ return name;
+}
+function mapKey(row,keys){let k=Object.keys(row).find(x=>keys.some(s=>String(x).toLowerCase().includes(s)));return k?row[k]:''}
+async function importExcel(e){
+ const f=e.target.files[0]; if(!f)return;
+ if(typeof XLSX==='undefined'){toast('Excel-Bibliothek nicht geladen. Internet prüfen.'); e.target.value=''; return}
+ const buf=await f.arrayBuffer();
+ const wb=XLSX.read(buf,{type:'array'});
+ const allRows=[];
+ wb.SheetNames.forEach(sheetName=>{
+   const ws=wb.Sheets[sheetName];
+   const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+   rows.forEach(row=>allRows.push({sheetName,row}));
+ });
+ let count=0;
+ const preview=[];
+ for(const item of allRows){
+   const row=item.row;
+   const txt=rowText(row);
+   if(!txt.trim()) continue;
+   let r=reportDefaults();
+   const inferredType=inferTypeFromText(txt);
+   r.type=smartGet(row,['typ','auftragstyp','auftragsart','tätigkeit','taetigkeit','art']) || inferredType;
+   if(!TYPE_ACTIVITY_MAP[r.type]) r.type=inferredType;
+   r.sourceSheet=item.sheetName||'';
+   r.sourceId=smartGet(row,['id']);
+   r.sourceLfd=smartGet(row,['lfd','lfd. nr','laufende nr']);
+   r.status=smartGet(row,['status']) || r.status || 'Offen';
+   r.priority=smartGet(row,['prio','priorität','prioritaet','priority']) || '';
+   r.createdSourceDate=smartGet(row,['angelegt am','erstellt','anlage datum']);
+   r.lastCheck=smartGet(row,['letzte überprüfung','letzte ueberpruefung','letzte prüfung','letzte pruefung']);
+   r.imsDone=smartGet(row,['ims installation im mdm abgeschlossen','ims abgeschlossen','mdm abgeschlossen']);
+   r.jira=smartGet(row,['jira','ticket','servicemeldung','servicenummer']);
+   r.customer=smartGet(row,['kunde','kundenname','name','objekt','anschlussnutzer','auftraggeber','firma']) || '';
+   r.address=smartGet(row,['straße','strasse','adresse','anschrift','hausanschrift','ort','einbauort','objektadresse']) || '';
+   r.orderNo=smartGet(row,['auftrag','auftragsnr','auftragsnummer','ticket','vorgang','vorgangsnummer','beleg','lfd. nr']) || r.sourceLfd || '';
+   r.customerNo=smartGet(row,['kundennr','kundennummer','vertragskonto','konto']) || '';
+   r.phone=smartGet(row,['telefonnummer','telefon','tel','mobil','handy']) || '';
+   r.operator=ensureOperatorExists(smartGet(row,['netzbetreiber','vnb','msb','messstellenbetreiber','grundzuständiger','gmsb']));
+   r.melo=smartGet(row,['melo','marktlokation','marktlokations-id','marktlokations id','lokation']) || '';
+   r.meterOld=smartGet(row,['zähler','zaehler','zähler alt','zaehler alt','altzähler','altzaehler','zählpunkt alt','zaehlpunkt alt','zählernummer alt','zaehlernummer alt']) || '';
+   r.meterNew=smartGet(row,['zähler neu','zaehler neu','neuzähler','neuzaehler','zählernummer neu','zaehlernummer neu']) || '';
+   r.gateway=smartGet(row,['gateway','smgw','geräte-id','geraete-id','seriennummer gateway','gatewaynummer']) || '';
+   r.faultText=smartGet(row,['fehlerbeschreibung','störung','stoerung','störungsbild','stoerungsbild','fehler','beschreibung','bemerkung','auftragstext','hinweis']) || '';
+   const tourComment=smartGet(row,['kommentar tourenplanung','tourenplanung','tour']);
+   const monteurComment=smartGet(row,['kommentar monteur','monteur kommentar']);
+   const amm=smartGet(row,['kommentar amm','amm mdm']);
+   const imp=smartGet(row,['kommentar imp','imp']);
+   const taskForce=smartGet(row,['task force','bearbeitung gegeben']);
+   const wrongInstall=smartGet(row,['fehlinstallation','fehlinstallation durch dl']);
+   r.freeText=smartGet(row,['arbeitsbericht','freitext','tätigkeit text','taetigkeit text','arbeit','notiz']) || '';
+   r.notes=[
+     r.notes,
+     r.sourceId?`Import-ID: ${r.sourceId}`:'',
+     r.sourceLfd?`lfd. Nr.: ${r.sourceLfd}`:'',
+     r.priority?`Priorität: ${r.priority}`:'',
+     r.imsDone?`IMS Installation im MDM abgeschlossen: ${r.imsDone}`:'',
+     r.lastCheck?`Letzte Überprüfung: ${r.lastCheck}`:'',
+     r.jira?`Jira/Servicemeldung: ${r.jira}`:'',
+     tourComment?`Kommentar Tourenplanung: ${tourComment}`:'',
+     monteurComment?`Kommentar Monteur: ${monteurComment}`:'',
+     amm?`Kommentar AMM/MDM: ${amm}`:'',
+     imp?`Kommentar IMP: ${imp}`:'',
+     taskForce?`Task Force: ${taskForce}`:'',
+     wrongInstall?`Fehlinstallation durch DL: ${wrongInstall}`:''
+   ].filter(Boolean).join('\n');
+   r.material=smartGet(row,['material','artikel','position']) || '';
+   const d=smartGet(row,['datum','termin','ausführung','ausfuehrung','einsatzdatum']);
+   if(d){
+     try{
+       if(typeof d==='number'){let dt=XLSX.SSF.parse_date_code(d);r.date=`${dt.y}-${String(dt.m).padStart(2,'0')}-${String(dt.d).padStart(2,'0')}`}
+       else {
+         const ds=String(d);
+         const m=ds.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+         r.date=m?`${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`:ds.slice(0,10);
+       }
+     }catch{}
+   }
+   r.activities=autoActivitiesForImport(r.type,txt);
+   r.faults=autoFaultsForImport(r.type,txt);
+   if(!r.freeText){
+     r.freeText='Aus Excel importiert. Bitte Angaben vor Ort prüfen, ergänzen und bestätigen.';
+   }
+   state.reports.push(r);
+   preview.push({Rapport:r.nr,Typ:r.type,Prio:r.priority,Kunde:r.customer,Adresse:r.address,Auftrag:r.orderNo,MeLo:r.melo,Zähler:r.meterOld,Gateway:r.gateway,Störungen:r.faults.join(', '),Tätigkeiten:r.activities.length});
+   count++;
+ }
+ save(); e.target.value=''; render();
+ if(preview.length){
+   const rows=preview.slice(0,20).map(x=>`<tr>${Object.values(x).map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('');
+   openModal(`<div class="docForm"><h2>Excel Import abgeschlossen</h2><div class="infoCard">${count} Rapporte wurden importiert. Die App hat ID, lfd. Nr., Status, Prio, Fehlerbeschreibung, MeLo, Zähler, Gateway, Straße, Kunde, Telefon und Kommentare soweit vorhanden übernommen. Bitte jeden Rapport vor dem Drucken prüfen.</div><div class="importPreview"><table><thead><tr>${Object.keys(preview[0]).map(k=>`<th>${esc(k)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>${preview.length>20?'<p>Es werden nur die ersten 20 Einträge angezeigt.</p>':''}</div><div class="toolbar"><button class="btn gold" onclick="closeModal()">OK</button></div></div>`);
+ } else toast('Keine verwertbaren Excel-Zeilen gefunden');
+}
+function exportReportsExcel(){let ids=[...selectedReports]; let arr=(ids.length?state.reports.filter(r=>selectedReports.has(r.id)):state.reports).map(r=>({Rapport:r.nr,Datum:r.date,Status:r.status,Typ:r.type,Firma:r.company,Monteur:r.monteur,Kunde:r.customer,Adresse:r.address,Netzbetreiber:r.operator,Auftrag:r.orderNo,MeLo:r.melo,ZählerAlt:r.meterOld,ZählerNeu:r.meterNew,Gateway:r.gateway,Störungsbilder:(r.faults||[]).join('; '),Freitext:r.freeText,Material:r.material,Notizen:r.notes,Artikel:(r.articles||[]).map(a=>(a.articleNo||'')+' '+(a.name||'')+' '+(a.qty||'')+' '+(a.unit||'')).join('; '),Elektroinstallation:(r.electro?[(r.electro.installationType||''),(r.electro.systemType||''),(r.electro.cableType||''),(r.electro.crossSection||''),(r.electro.breaker||''),(r.electro.rcd||'')].join(' / '):''),Fotos:(r.photos||[]).length})); if(typeof XLSX!=='undefined'){let ws=XLSX.utils.json_to_sheet(arr), wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Rapporte');XLSX.writeFile(wb,'Monteur-Rapporte.xlsx')}else{download('rapporte.csv',arr.map(o=>Object.values(o).join(';')).join('\n'),'text/csv')}}
+function exportBackup(){download('Monteur-Rapport-Pro-Backup.json',JSON.stringify(state,null,2),'application/json')}
+async function importBackup(e){let f=e.target.files[0]; if(!f)return; try{state=JSON.parse(await f.text()); save(); render(); toast('Backup importiert')}catch(err){alert('Backup konnte nicht gelesen werden. Bitte gültige JSON-Datei wählen.')} finally{e.target.value=''}}
+function download(name,content,type){
+ const blob=new Blob([content],{type:type||'application/octet-stream'});
+ const url=URL.createObjectURL(blob);
+ const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+ const box=$('mobileDownloadBox');
+ try{
+   const a=document.createElement('a');
+   a.href=url; a.download=name; a.rel='noopener';
+   document.body.appendChild(a); a.click(); a.remove();
+   if(isMobile && box){
+     box.innerHTML=`<b>Download bereit:</b><br><a href="${url}" download="${esc(name)}" target="_blank">${esc(name)}</a><br><small>Wenn nichts passiert: Link lange drücken und „Datei laden“ oder „In Dateien sichern“ wählen.</small><br><button class="btn gold" onclick="$('mobileDownloadBox').style.display='none'">Schließen</button>`;
+     box.style.display='block';
+     setTimeout(()=>{try{URL.revokeObjectURL(url)}catch{}},60000);
+   } else {
+     setTimeout(()=>{try{URL.revokeObjectURL(url)}catch{}},5000);
+   }
+ }catch(e){
+   if(box){
+     box.innerHTML=`<b>Download konnte nicht automatisch starten.</b><br><a href="${url}" download="${esc(name)}" target="_blank">${esc(name)} öffnen</a><br><button class="btn gold" onclick="$('mobileDownloadBox').style.display='none'">Schließen</button>`;
+     box.style.display='block';
+   } else {
+     window.open(url,'_blank');
+   }
+ }
+}
+function importOperatorCSV(){let inp=document.createElement('input');inp.type='file';inp.accept='.csv,.txt';inp.onchange=async()=>{let txt=await inp.files[0].text();txt.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).forEach(n=>{if(!state.operators.some(o=>o.name.toLowerCase()===n.toLowerCase()))state.operators.push({id:uid(),name:n,type:'Import',region:'',note:''})});save();render();toast('Netzbetreiber importiert')};inp.click()}
+function printSelected(){let ids=[...selectedReports]; printReports(ids.length?ids:state.reports.map(r=>r.id))}
+function printReports(ids,skipConfirm=false){let reps=state.reports.filter(r=>ids.includes(r.id)); if(!reps.length)return toast('Keine Rapporte für Druck'); if(!skipConfirm && !confirmBeforePrintReports(reps))return; $('printDoc').innerHTML=reps.map(printHtml).join(''); setTimeout(()=>window.print(),150)}
+function printHtml(r){let comp=state.companies.find(c=>c.name===r.company)||state.companies[0]||{};r.electro=defaultElectro(r.electro);let articles=(r.articles||[]).map(a=>`<tr><td>${esc(a.articleNo||'')}</td><td>${esc(a.name||'')}</td><td>${esc(a.qty||'')}</td><td>${esc(a.unit||'')}</td><td>${a.image?`<img class="pArticleImg" src="${a.image}">`:''}</td></tr>`).join('');let meas=(r.measurements||[]).map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.value)}</td><td>${esc(m.unit)}</td><td>${esc(m.rate)}</td></tr>`).join('');let photos=(r.photos||[]).map((p,i)=>`<div class="pPhoto"><img src="${p.data}"><div>Foto ${i+1} · ${esc(p.name||'')}</div></div>`).join('');return `<div class="pPage"><div class="pHeader"><div class="pLogo"><div class="pLogoBox">LR</div><div><h1>Monteur Rapport Pro</h1><small>Entwicklung, Urheberrecht und Copyright Lorenzo Randazzo</small></div></div><div class="pNo">${esc(r.nr)}<br>${esc(r.date)}</div></div>
+<div class="pGrid2"><div class="pBox"><h3>Stammdaten</h3><div class="kv"><b>Typ:</b><span>${esc(r.type)}</span><b>Status:</b><span>${esc(r.status)}</span><b>Kunde:</b><span>${esc(r.customer)}</span><b>Telefon:</b><span>${esc(r.phone)}</span><b>Adresse:</b><span>${esc(r.address)}</span><b>Kundennr.:</b><span>${esc(r.customerNo)}</span><b>Auftragsnr.:</b><span>${esc(r.orderNo)}</span></div></div><div class="pBox"><h3>Technik</h3><div class="kv"><b>Firma:</b><span>${esc(r.company)}</span><b>Monteur:</b><span>${esc(r.monteur)}</span><b>Netzbetreiber:</b><span>${esc(r.operator)}</span><b>MeLo-ID:</b><span>${esc(r.melo)}</span><b>Zähler alt:</b><span>${esc(r.meterOld)}</span><b>Zähler neu:</b><span>${esc(r.meterNew)}</span><b>Gateway:</b><span>${esc(r.gateway)}</span></div></div></div>
+<div class="pBox"><h3>Störungsbild / Auftrag</h3><div class="pText">${esc((r.faults||[]).join('\\n'))}${r.faultText?'\\n'+esc(r.faultText):''}</div></div>
+<div class="pBox"><h3>Tätigkeiten / Checkliste</h3><div class="pText">${esc((r.activities||[]).map(x=>'✓ '+x).join('\\n'))}</div></div>
+<div class="pBox"><h3>Freitext / Arbeitsbericht</h3><div class="pText">${esc(r.freeText)}</div></div>
+<div class="pBox"><h3>Material / Notizen</h3><div class="pText"><b>Material:</b>\\n${esc(r.material)}\\n\\n<b>Notizen:</b>\\n${esc(r.notes)}</div></div>
+${(r.type==='Elektroinstallation'||r.type==='Multi Elektro Rapport')?`<div class="pBox"><h3>Elektroinstallation / Multi Elektro Rapport</h3><div class="kv"><b>Installationsart:</b><span>${esc(r.electro.installationType)}</span><b>Netzform:</b><span>${esc(r.electro.systemType)}</span><b>Schutzmaßnahme:</b><span>${esc(r.electro.protection)}</span><b>Leitung/Kabel:</b><span>${esc(r.electro.cableType)}</span><b>Querschnitt:</b><span>${esc(r.electro.crossSection)}</span><b>Stromkreis:</b><span>${esc(r.electro.circuit)}</span><b>Absicherung:</b><span>${esc(r.electro.breaker)}</span><b>RCD/FI:</b><span>${esc(r.electro.rcd)}</span><b>Prüfgrundlage:</b><span>${esc(r.electro.measurementStandard)}</span></div><div class="pText"><b>Prüfergebnis:</b>\n${esc(r.electro.inspectionResult)}\n\n<b>Weitere Details:</b>\n${esc(r.electro.additional)}</div></div>`:''}
+${articles?`<div class="pBox"><h3>Artikel / Materialpositionen</h3><table class="pTable"><thead><tr><th>Artikelnummer</th><th>Bezeichnung</th><th>Menge</th><th>Einheit</th><th>Bild</th></tr></thead><tbody>${articles}</tbody></table></div>`:''}
+<div class="pBox"><h3>Messwerte</h3><table class="pTable"><thead><tr><th>Parameter</th><th>Wert</th><th>Einheit</th><th>Bewertung</th></tr></thead><tbody>${meas}</tbody></table></div>
+${photos?`<div class="pBox"><h3>Fotos</h3><div class="pPhotos">${photos}</div></div>`:''}
+<div class="pGrid2"><div class="pBox"><h3>Unterschrift Kunde / Auftraggeber</h3>${r.signatureCustomer?`<img class="pSigImg" src="${r.signatureCustomer}">`:'<br><br><br>'}</div><div class="pBox"><h3>Unterschrift Monteur / Ausführender</h3>${r.signatureMonteur?`<img class="pSigImg" src="${r.signatureMonteur}">`:'<br><br><br>'}</div></div>
+<div class="pFooter">Monteur Rapport Pro · Entwicklung, Urheberrecht und Copyright: Lorenzo Randazzo ${comp.name?'· Firma: '+esc(comp.name):''}</div></div>`}
+
+function getTimeMin(v){ if(!v)return 0; const [h,m]=String(v).split(':').map(Number); return (h||0)*60+(m||0); }
+function dateAdd(date,days){ const d=new Date(date); d.setDate(d.getDate()+days); return d; }
+function isoDate(d){ return d.toISOString().slice(0,10); }
+function dayName(d){ return ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'][d.getDay()]; }
+function mapsLink(points){
+ const clean=points.filter(Boolean).map(x=>String(x).trim()).filter(Boolean);
+ if(clean.length<2)return '#';
+ const origin=encodeURIComponent(clean[0]);
+ const dest=encodeURIComponent(clean[clean.length-1]);
+ const way=clean.slice(1,-1).map(encodeURIComponent).join('|');
+ return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${way?`&waypoints=${way}`:''}`;
+}
+function singleMapLink(address){
+ const a=String(address||'').trim();
+ return a ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}` : '#';
+}
+
+function collectTourSettings(){
+ return {
+  startDate:$('tp_startDate')?.value || isoDate(new Date()),
+  returnDate:$('tp_returnDate')?.value || '',
+  weeks:Number($('tp_weeks')?.value||1),
+  maxJobs:Number($('tp_maxJobs')?.value||8),
+  arrivalTravel:Number($('tp_arrivalTravel')?.value||0),
+  returnTravel:Number($('tp_returnTravel')?.value||0),
+  startLocation:$('tp_startLocation')?.value||'',
+  hotel:$('tp_hotel')?.value||'',
+  returnLocation:$('tp_returnLocation')?.value||'',
+  workStart:$('tp_workStart')?.value||'08:00',
+  workEnd:$('tp_workEnd')?.value||'17:00',
+  breakMin:Number($('tp_break')?.value||30),
+  jobMinutes:Number($('tp_jobMinutes')?.value||45),
+  travelBuffer:Number($('tp_travelBuffer')?.value||20),
+  mode:$('tp_mode')?.value||'priority'
+ };
+}
+function loadTourSettings(){
+ const s=state.tourSettings||{};
+ ['startDate','weeks','maxJobs','startLocation','hotel','returnLocation','workStart','workEnd','break','jobMinutes','travelBuffer','mode'].forEach(()=>{});
+ if($('tp_startDate')) $('tp_startDate').value=s.startDate||isoDate(new Date());
+ if($('tp_returnDate')) $('tp_returnDate').value=s.returnDate||s.startDate||isoDate(new Date());
+ if($('tp_weeks')) $('tp_weeks').value=s.weeks||1;
+ if($('tp_maxJobs')) $('tp_maxJobs').value=s.maxJobs||8;
+ if($('tp_arrivalTravel')) $('tp_arrivalTravel').value=s.arrivalTravel??180;
+ if($('tp_returnTravel')) $('tp_returnTravel').value=s.returnTravel??180;
+ if($('tp_startLocation')) $('tp_startLocation').value=s.startLocation||'';
+ if($('tp_hotel')) $('tp_hotel').value=s.hotel||'';
+ if($('tp_returnLocation')) $('tp_returnLocation').value=s.returnLocation||'';
+ if($('tp_workStart')) $('tp_workStart').value=s.workStart||'08:00';
+ if($('tp_workEnd')) $('tp_workEnd').value=s.workEnd||'17:00';
+ if($('tp_break')) $('tp_break').value=s.breakMin??30;
+ if($('tp_jobMinutes')) $('tp_jobMinutes').value=s.jobMinutes||45;
+ if($('tp_travelBuffer')) $('tp_travelBuffer').value=s.travelBuffer||20;
+ if($('tp_mode')) $('tp_mode').value=s.mode||'priority';
+ renderTourPlan();
+}
+function workCheck(totalMin, breakMin){
+ const workWithoutBreak=totalMin-breakMin;
+ const h=workWithoutBreak/60;
+ const requiredBreak = h>9?45:(h>6?30:0);
+ const msgs=[];
+ let level='ok';
+ if(breakMin<requiredBreak){msgs.push(`Pause zu gering: mindestens ${requiredBreak} Minuten einplanen.`); level='bad'}
+ if(h>10){msgs.push('Arbeitszeit über 10 h: nach ArbZG kritisch/nicht planen.'); level='bad'}
+ else if(h>8){msgs.push('Arbeitszeit über 8 h: nur im gesetzlichen Ausgleichsrahmen planen.'); if(level!=='bad')level='warn'}
+ return {hours:h,level,msgs,requiredBreak};
+}
+function generateTourPlan(){
+ const s=collectTourSettings();
+ if(!s.startLocation || !s.hotel || !s.returnLocation){ alert('Bitte Anreise/Startstandort, Hotel und Rückreise/Zielstandort angeben.'); return; }
+ if(!s.returnDate){ alert('Bitte Rückreisedatum angeben.'); return; }
+ state.tourSettings=s;
+ let jobs=state.reports.filter(r=>r.status!=='Abgeschlossen' && r.status!=='Erledigt');
+ if(s.mode==='priority'){
+   jobs.sort((a,b)=>(Number(a.priority||99)-Number(b.priority||99)) || String(a.address||'').localeCompare(String(b.address||'')));
+ } else {
+   jobs.sort((a,b)=>String(a.address||'').localeCompare(String(b.address||'')) || (Number(a.priority||99)-Number(b.priority||99)));
+ }
+ const days=[];
+ let start=new Date(s.startDate);
+ let ret=new Date(s.returnDate);
+ if(ret < start){ alert('Rückreisedatum darf nicht vor dem Startdatum liegen.'); return; }
+ let maxEnd=dateAdd(start, s.weeks*7-1);
+ let endDate=ret<maxEnd?ret:maxEnd;
+ for(let d=new Date(start); d<=endDate; d=dateAdd(d,1)){
+   if(d.getDay()===0 || d.getDay()===6) continue;
+   const date=isoDate(d);
+   const isArrival=date===s.startDate;
+   const isReturn=date===s.returnDate;
+   const fixedTravel=(isArrival?s.arrivalTravel:0)+(isReturn?s.returnTravel:0);
+   const normalCapacity=s.maxJobs;
+   const availableWorkMin=Math.max(0,(getTimeMin(s.workEnd)-getTimeMin(s.workStart))-s.breakMin-fixedTravel);
+   const perJob=s.jobMinutes+s.travelBuffer;
+   const travelReducedCapacity=Math.max(0, Math.min(normalCapacity, Math.floor(availableWorkMin / Math.max(1,perJob))));
+   days.push({date,weekday:dayName(d),jobs:[],isArrival,isReturn,fixedTravel,capacity:travelReducedCapacity});
+ }
+ if(!days.length){ alert('Im gewählten Zeitraum gibt es keine planbaren Werktage.'); return; }
+ let dayIndex=0;
+ jobs.forEach(job=>{
+   let guard=0;
+   while(days[dayIndex] && days[dayIndex].jobs.length>=days[dayIndex].capacity && guard<days.length){ dayIndex++; guard++; }
+   if(days[dayIndex]) days[dayIndex].jobs.push(job);
+ });
+ days.forEach((d,i)=>{
+   const jobCount=d.jobs.length;
+   const localTravel=(jobCount+1)*s.travelBuffer;
+   const gross=jobCount*s.jobMinutes+localTravel+s.breakMin+d.fixedTravel;
+   const check=workCheck(gross,s.breakMin);
+   d.travelMin=localTravel; d.grossMin=gross; d.workHours=check.hours; d.level=check.level; d.messages=check.msgs;
+   if(d.isArrival) d.messages.push(`Anreise berücksichtigt: ${d.fixedTravel && d.isReturn ? s.arrivalTravel : s.arrivalTravel} Minuten.`);
+   if(d.isReturn) d.messages.push(`Rückreise berücksichtigt: ${s.returnTravel} Minuten.`);
+   if(jobCount>d.capacity){ d.level='bad'; d.messages.push(`Zu viele Aufträge für diesen Tag. Kapazität wegen Reisezeit: ${d.capacity}.`) }
+   const startPoint=d.isArrival?s.startLocation:s.hotel;
+   const endPoint=d.isReturn?s.returnLocation:s.hotel;
+   d.routeLink=mapsLink([startPoint,...d.jobs.map(j=>j.address),endPoint]);
+ });
+ const weekSums={};
+ days.forEach(d=>{const kw=getWeek(new Date(d.date)); weekSums[kw]=(weekSums[kw]||0)+d.workHours});
+ days.forEach(d=>{const kw=getWeek(new Date(d.date)); if(weekSums[kw]>48){d.level='bad'; d.messages.push(`KW ${kw}: Summe ca. ${weekSums[kw].toFixed(1)} h über 48 h.`)}});
+ const notPlanned=jobs.length - days.reduce((a,d)=>a+d.jobs.length,0);
+ if(notPlanned>0){ alert(`${notPlanned} Aufträge konnten wegen Kapazität/Zeitraum nicht eingeplant werden. Zeitraum oder Tageskapazität erhöhen.`); }
+ state.tourPlans=days;
+ save(); renderTourPlan(); toast('Tourenplanung erstellt');
+}
+function getWeek(date){
+ const d=new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+ const dayNum=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-dayNum);
+ const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+ return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+function renderTourPlan(){
+ const box=$('tourResult'); if(!box)return;
+ if(!state.tourPlans || !state.tourPlans.length){box.innerHTML='<div class="card">Noch keine Tour geplant.</div>'; return;}
+ box.innerHTML=state.tourPlans.map(d=>{
+  const cls=d.level||'ok';
+  return `<div class="tourDay ${cls}">
+   <div class="tourHead"><div><h3>${esc(d.weekday)} · ${esc(d.date)} · KW ${getWeek(new Date(d.date))}</h3><p>${d.jobs.length} Aufträge · Kapazität ${d.capacity??'-'} · Arbeitszeit ca. ${Number(d.workHours||0).toFixed(1)} h · Fahrpuffer ${d.travelMin||0} min</p><span class="travelBadge">${d.isArrival?'Anreisetag':'Einsatztag'}</span>${d.isReturn?'<span class="travelBadge">Rückreisetag</span>':''}${(d.messages||[]).map(m=>`<div class="${cls==='bad'?'workBad':'workWarn'}">${esc(m)}</div>`).join('')}</div><a class="routeLink" target="_blank" href="${esc(d.routeLink)}">Gesamtroute öffnen</a></div>
+   <div class="tourJobs">${d.jobs.map((j,i)=>`<div class="tourJob"><b>${i+1}. ${esc(j.customer||'Ohne Kunde')}</b><br>${esc(j.address||'Adresse fehlt')}<br><a class="singleMap" target="_blank" href="${esc(singleMapLink(j.address))}">Adresse einzeln öffnen</a><br><small>Prio: ${esc(j.priority||'')} · Auftrag: ${esc(j.orderNo||'')} · MeLo: ${esc(j.melo||'')} · Gateway: ${esc(j.gateway||'')}</small></div>`).join('')}</div>
+  </div>`;
+ }).join('');
+}
+function clearTourPlan(){ if(confirm('Tourplan löschen?')){state.tourPlans=[];save();renderTourPlan()} }
+function exportTourCSV(){
+ if(!state.tourPlans||!state.tourPlans.length)return toast('Kein Tourplan vorhanden');
+ const rows=[['Datum','Wochentag','KW','Reihenfolge','Kunde','Adresse','Auftrag','Prio','MeLo','Zähler','Gateway','Arbeitszeit h','Einzeladresse Maps','Route']];
+ state.tourPlans.forEach(d=>d.jobs.forEach((j,i)=>rows.push([d.date,d.weekday,getWeek(new Date(d.date)),i+1,j.customer,j.address,j.orderNo,j.priority,j.melo,j.meterOld,j.gateway,Number(d.workHours||0).toFixed(1),singleMapLink(j.address),d.routeLink])));
+ download('Tourenplanung.csv', rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(';')).join('\n'), 'text/csv');
+}
+function printTourPlan(){
+ if(!state.tourPlans||!state.tourPlans.length)return toast('Kein Tourplan vorhanden');
+ $('printDoc').innerHTML=`<div class="pPage"><div class="pHeader"><div class="pLogo"><div class="pLogoBox">LR</div><div><h1>Monteur Rapport Pro</h1><small>Tourenplanung · Datenschutz beachten · © Lorenzo Randazzo</small></div></div><div class="pNo">${new Date().toLocaleDateString('de-DE')}</div></div>
+ ${state.tourPlans.map(d=>`<div class="pTourDay ${d.level}"><h3>${esc(d.weekday)} · ${esc(d.date)} · KW ${getWeek(new Date(d.date))}</h3><p>${d.jobs.length} Aufträge · ca. ${Number(d.workHours||0).toFixed(1)} h · Fahrpuffer ${d.travelMin||0} min</p>${(d.messages||[]).map(m=>`<p><b>Achtung:</b> ${esc(m)}</p>`).join('')}<ol>${d.jobs.map(j=>`<li><b>${esc(j.customer||'Ohne Kunde')}</b>, ${esc(j.address||'Adresse fehlt')} · Auftrag ${esc(j.orderNo||'')} · Gateway ${esc(j.gateway||'')} · Einzeladresse: ${esc(singleMapLink(j.address))}</li>`).join('')}</ol><p>Route: ${esc(d.routeLink)}</p></div>`).join('')}</div>`;
+ window.print();
+}
+
+
+function simpleMapLink(address){ return address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '#'; }
+function quickManualJob(){
+ openModal(`<div class="docForm"><h2>Auftrag schnell hinzufügen</h2>
+ <div class="simpleSelectPanel">Einfach die wichtigsten Daten eingeben. Danach kann der Auftrag jederzeit vollständig als Rapport bearbeitet werden.</div>
+ <div class="row3"><div class="field"><label>Auftragstyp</label><select id="q_type">${opts(['Entstörung iMSys/SMGW','Zählertausch','Sperrung','Entsperrung','RLM/Wandlermessung','Zählerplatzprüfung','Elektroinstallation','Multi Elektro Rapport','Sonstiges'],'Entstörung iMSys/SMGW')}</select></div><div class="field"><label>Priorität</label><select id="q_prio"><option></option><option>1</option><option>2</option><option>3</option><option>4</option></select></div><div class="field"><label>Status</label><select id="q_status"><option>Offen</option><option>Geplant</option><option>In Bearbeitung</option></select></div></div>
+ <div class="row"><div class="field"><label>Kunde</label><input id="q_customer"></div><div class="field"><label>Telefon</label><input id="q_phone"></div></div>
+ <div class="field"><label>Adresse</label><input id="q_address"></div>
+ <div class="row"><div class="field"><label>Auftragsnummer</label><input id="q_order"></div><div class="field"><label>Netzbetreiber</label><input id="q_operator" list="operatorQuickData"><datalist id="operatorQuickData">${state.operators.map(o=>`<option value="${esc(o.name)}"></option>`).join('')}</datalist></div></div>
+ <div class="field"><label>Notiz</label><textarea id="q_note"></textarea></div>
+ <div class="toolbar"><button class="btn gold" onclick="saveQuickManualJob()">Auftrag speichern</button><button class="btn" onclick="closeModal()">Abbrechen</button></div></div>`);
+}
+function saveQuickManualJob(){
+ const r=reportDefaults();
+ r.type=$('q_type').value; r.priority=$('q_prio').value; r.status=$('q_status').value; r.customer=$('q_customer').value; r.phone=$('q_phone').value; r.address=$('q_address').value; r.orderNo=$('q_order').value; r.operator=ensureOperatorExists($('q_operator').value); r.notes=$('q_note').value;
+ r.activities=autoActivitiesForImport(r.type, `${r.type} ${r.notes}`);
+ state.reports.push(r); save(); closeModal(); render(); toast('Auftrag gespeichert');
+}
+function addCalendarEvent(){
+ const ev={id:uid(),date:$('cal_date').value,time:$('cal_time').value,status:$('cal_status').value,customer:$('cal_customer').value,phone:$('cal_phone').value,address:$('cal_address').value,note:$('cal_note').value,createdAt:new Date().toISOString()};
+ if(!ev.date || !ev.customer){alert('Bitte mindestens Datum und Kunde eintragen.');return}
+ state.calendar=state.calendar||[]; state.calendar.push(ev); save(); clearCalendarForm(); renderCalendar(); toast('Termin gespeichert');
+}
+function clearCalendarForm(){['cal_date','cal_time','cal_customer','cal_phone','cal_address','cal_note'].forEach(id=>{if($(id))$(id).value=''}); if($('cal_status'))$('cal_status').value='Geplant'}
+function renderCalendar(){
+ const box=$('calendarList'); if(!box)return;
+ const q=($('qCalendar')?.value||'').toLowerCase();
+ const items=(state.calendar||[]).filter(e=>[e.date,e.time,e.status,e.customer,e.phone,e.address,e.note].join(' ').toLowerCase().includes(q)).sort((a,b)=>String(a.date+a.time).localeCompare(String(b.date+b.time)));
+ box.innerHTML=items.length?items.map(e=>`<div class="calendarItem"><h3>${esc(e.date)} ${esc(e.time||'')} · ${esc(e.customer)}</h3><p>${esc(e.status)} · ${esc(e.phone||'')}</p><p>${esc(e.address||'')}</p><p>${esc(e.note||'')}</p><div class="toolbar"><a class="singleMap" target="_blank" href="${esc(simpleMapLink(e.address))}">Adresse Maps</a><button class="btn small" onclick="calendarEventToReport('${e.id}')">als Rapport</button><button class="btn small red" onclick="deleteCalendarEvent('${e.id}')">löschen</button></div></div>`).join(''):'<div class="card">Keine Termine vorhanden.</div>';
+}
+function deleteCalendarEvent(id){ if(confirm('Termin löschen?')){state.calendar=(state.calendar||[]).filter(e=>e.id!==id);save();renderCalendar()} }
+function calendarEventToReport(id){
+ const e=(state.calendar||[]).find(x=>x.id===id); if(!e)return;
+ const r=reportDefaults(); r.date=e.date; r.customer=e.customer; r.phone=e.phone; r.address=e.address; r.notes='Aus Terminkalender übernommen: '+(e.note||''); r.status='Geplant'; r.activities=['Kunde informiert'];
+ state.reports.push(r); save(); render(); toast('Rapport aus Termin erstellt');
+}
+function calendarToReport(){
+ const ev={id:uid(),date:$('cal_date').value,time:$('cal_time').value,status:$('cal_status').value,customer:$('cal_customer').value,phone:$('cal_phone').value,address:$('cal_address').value,note:$('cal_note').value};
+ if(!ev.date || !ev.customer){alert('Bitte mindestens Datum und Kunde eintragen.');return}
+ state.calendar=state.calendar||[]; state.calendar.push(ev); calendarEventToReport(ev.id); clearCalendarForm(); renderCalendar();
+}
+
+function forceMergeSeeds(){state=mergeSeeds(state);save();render();toast('Startlisten aktualisiert: '+state.operators.length+' Netzbetreiber, '+state.faults.length+' Störungsbilder, '+state.activities.length+' Tätigkeiten')}
+function clearAppData(){if(confirm('Wirklich alle lokalen App-Daten löschen und mit neuer Startliste neu beginnen?')){localStorage.removeItem(STORE_KEY);state=loadState();selectedReports.clear();save();render();toast('App-Daten neu aufgebaut')}}
+
+function mobileCompatibilityCheck(){
+ const problems=[];
+ if(!('localStorage' in window)) problems.push('Lokaler Speicher nicht verfügbar');
+ if(!window.FileReader) problems.push('Datei-Upload wird vom Browser nicht unterstützt');
+ if(!HTMLCanvasElement.prototype.toDataURL) problems.push('Unterschrift/Fotofunktion eingeschränkt');
+ const mb=$('menuBtn'); if(!mb) problems.push('Menübutton fehlt');
+ if(problems.length){console.warn('Mobile Check:',problems); toast('Hinweis: '+problems.join(', '));}
+ return problems.length===0;
+}
+
+window.addEventListener('beforeunload',save);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+render();
+mobileCompatibilityCheck();
+</script>
+</body>
+</html>
